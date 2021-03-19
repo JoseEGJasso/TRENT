@@ -2,23 +2,26 @@ import PySimpleGUI as sg
 from PIL import Image
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename,asksaveasfilename
-
 from trent_procesador import PDI
-import io
+
 
 def abrir_imagen():
+    ''' Función que despliega el cuadro de dialogo para abrir una imagen'''
+
     Tk().withdraw()
     imagen_original = askopenfilename()
     return imagen_original
-    # Aquí se crea el objeto encargado de los filtros
+
 
 def guardar_imagen():
+    ''' Función que despliega el cuadro de dialogo para guardar una imagen'''
+
     Tk().withdraw()
     ruta_carpeta = asksaveasfilename()
     return ruta_carpeta
 
 
-
+# Organización de la barra de opciones
 menu_def = [ ['Archivo', ['Abrir', 'Guardar', 'Cerrar']],['Imagen',['Filtros',['Grises',['Tono 1','Tono 2','Tono 3','Tono 4','Tono 5','Tono 6','Tono 7','Tono 8','Tono 9'],'Mosaico'],'Brillo','Deshacer']]]
 
 
