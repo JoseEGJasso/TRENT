@@ -22,7 +22,15 @@ def guardar_imagen():
 
 
 # Organización de la barra de opciones
-menu_def = [ ['Archivo', ['Abrir', 'Guardar', 'Cerrar']],['Imagen',['Filtros',['Grises',['Tono 1','Tono 2','Tono 3','Tono 4','Tono 5','Tono 6','Tono 7','Tono 8','Tono 9'],'Mosaico'],'Brillo','Deshacer']]]
+menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
+            ['Imagen',['Filtros',
+                        ['Grises',['Tono 1','Tono 2','Tono 3','Tono 4','Tono 5','Tono 6','Tono 7','Tono 8','Tono 9'],
+                            'Mosaico'],
+                        'Brillo',
+                        'Alto contraste',
+                        'Inverso',
+                        'Componentes RGB',
+                        'Deshacer']]]
 
 
 # Organizacion de los componentes de la interfaz
@@ -32,7 +40,7 @@ layout = [
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v1.0', layout,size = (800,500),element_justification = "center",)
+window = sg.Window('TRENT v1.1', layout,size = (800,500),element_justification = "center",)
 
 img = None
 pdi = None
@@ -111,7 +119,6 @@ while True:
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
         
-
     elif event == 'Brillo':
 
         if pdi != None:
@@ -131,6 +138,50 @@ while True:
                 elif event2 == 'apl-brillo':
                     v = values2['v-brillo']
                     pdi.modificar_brillo(v)
+                    window["ORI-IMG"].update(data = pdi.get_img('m'))
+        else:
+            sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
+
+    elif event == 'Alto contraste':
+    
+        if pdi != None:
+            pdi.alto_contraste()
+            window["ORI-IMG"].update(data = pdi.get_img('m'))
+        else:
+            sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
+
+    elif event == 'Inverso':
+        
+        if pdi != None:
+            pdi.inverso()
+            window["ORI-IMG"].update(data = pdi.get_img('m'))
+        else:
+            sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
+
+    elif event == 'Componentes RGB':
+    
+        if pdi != None:
+            # Organización de los componentes del widget de componentes RGB
+            layout_rgb = [
+                [sg.Text('Rojo: '),sg.Slider(range = (0,100),default_value = 0,orientation = 'horizontal',key = 'v-rojo')],
+                [sg.Text('Verde: '),sg.Slider(range = (0,100),default_value = 0,orientation = 'horizontal',key = 'v-verde')],
+                [sg.Text('Azul: '),sg.Slider(range = (0,100),default_value = 0,orientation = 'horizontal',key = 'v-azul')],
+                [sg.Button('Aplicar',key = 'apl-rgb')]
+            ]
+            
+            win_rgb = sg.Window('Componentes RGB',layout_rgb,element_justification = 'center',keep_on_top = True,modal = True)
+
+            while True:
+                event_rgb,val_rgb = win_rgb.read()
+
+                if event_rgb == sg.WIN_CLOSED:
+                    break
+                elif event_rgb == 'apl-rgb':
+                    n_r = int(val_rgb['v-rojo'])
+                    n_g = int(val_rgb['v-verde'])
+                    n_b = int(val_rgb['v-azul'])
+
+                    pdi.modificar_rgb(n_r,n_g,n_b)
                     window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)

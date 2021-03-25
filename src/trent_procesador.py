@@ -1,5 +1,5 @@
 from PIL import Image
-from io import BytesIO as io
+import io
 
 
 class PDI(object):
@@ -14,6 +14,18 @@ class PDI(object):
         self.img_m = self.img_o.copy()    # Imagen modificada
         self.ancho = self.img_o.size[0]   # Número de pixeles a lo ancho de la imagen original
         self.largo = self.img_o.size[1]   # Número de pixeles a lo largo de la imagen original
+
+
+    def __modificar_pixeles(self,ec):
+
+        for i in range(0,self.ancho):
+            for j in range(0,self.largo):
+
+                r = self.img_m.getpixel((i,j))[0]
+                g = self.img_m.getpixel((i,j))[1]
+                b = self.img_m.getpixel((i,j))[2]
+
+                self.img_m.putpixel((i,j),ec(r,g,b))
 
 
     def __aplicar_filtro(self,ec):
@@ -32,8 +44,6 @@ class PDI(object):
                 b = self.img_m.getpixel((i,j))[2]
 
                 value = ec(r,g,b)
-
-                print((i,j))
 
                 self.img_m.putpixel((i,j),(value,value,value))
 
@@ -202,7 +212,6 @@ class PDI(object):
         columna_fin: int. Valor de la columna final
         fila_fin: int. Valor de la columna inicial'''
 
-
         total_pixeles = (columna_fin - columna_ini) * (fila_fin - fila_ini)
         total_r = 0
         total_g = 0
@@ -220,3 +229,35 @@ class PDI(object):
                 total_b += b
 
         return (total_r // total_pixeles,total_g // total_pixeles,total_b // total_pixeles)
+
+
+    def alto_contraste(self):
+        ''' Función que aplica el filtro de alto contraste a la imagen original'''
+
+        self.deshacer_filtro()
+        self.gris('Tono 1')
+
+        func = lambda r, g, b: (255,255,255) if r > 127 and g > 127 and b > 127 else (0,0,0)
+
+        self.__modificar_pixeles(func)
+
+    
+    def inverso(self):
+        ''' Función que aplica el filtro inverso a la imagen original'''
+
+        self.deshacer_filtro()
+        self.gris('Tono 1')
+
+        func = lambda r, g, b: (0,0,0) if r > 127 and g > 127 and b > 127 else (255,255,255)
+
+        self.__modificar_pixeles(func)
+
+
+    def modificar_rgb(self,new_r,new_g,new_b):
+        ''' Función que aplica el filtro inverso a la imagen original'''
+
+        self.deshacer_filtro()
+        
+        func = lambda r, g, b: (new_r & r,new_g & g,new_b & b)
+
+        self.__modificar_pixeles(func)
