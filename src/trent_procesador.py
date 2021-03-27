@@ -254,10 +254,94 @@ class PDI(object):
 
 
     def modificar_rgb(self,new_r,new_g,new_b):
-        ''' Función que aplica el filtro inverso a la imagen original'''
+        ''' Función que aplica la capa RGB a la imagen original'''
 
         self.deshacer_filtro()
         
         func = lambda r, g, b: (new_r & r,new_g & g,new_b & b)
 
         self.__modificar_pixeles(func)
+
+
+    def __aplicar_convolucion(self,filtro,factor,brillo):
+
+        for y in range(0,self.largo):
+            for x in range(0,self.ancho):
+
+                suma_r = suma_g = suma_b = 0
+
+                for f_y in range(0,len(filtro)):
+                    for f_x in range(0,len(filtro[0])):
+                        
+                        img_x = (x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho
+                        img_y = (y - len(filtro) / 2 + f_y + self.largo) % self.largo
+
+                        r = self.img_o.getpixel((img_x,img_y))[0]
+                        g = self.img_o.getpixel((img_x,img_y))[1]
+                        b = self.img_o.getpixel((img_x,img_y))[2]
+
+                        suma_r += r * filtro[f_y][f_x]
+                        suma_g += g * filtro[f_y][f_x]
+                        suma_b += b * filtro[f_y][f_x]
+                    
+                new_rgb = (min(max(int(factor * suma_r + brillo), 0), 255),
+                           min(max(int(factor * suma_g + brillo), 0), 255),
+                           min(max(int(factor * suma_b + brillo), 0), 255))
+
+                self.img_m.putpixel((x,y),new_rgb)
+
+    def filtros_convolucion(self,filtro):
+
+        if filtro == 'Suave':
+            self.__aplicar_convolucion(
+                [[0.0,0.2,0.0],
+                 [0.2,0.2,0.2],
+                 [0.0,0.2,0.0]], 1.0, 0.0
+            )
+        elif filtro == 'Fuerte':
+            self.__aplicar_convolucion(
+                [[0,0,1,0,0],
+                 [0,1,1,1,0],
+                 [1,1,1,1,1],
+                 [0,1,1,1,0],
+                 [0,0,1,0,0]], 1.0 / 13.0, 0.0
+            )
+        elif filtro == 'Motion Blur':
+            self.__aplicar_convolucion(
+                [[1, 0, 0, 0, 0, 0, 0, 0, 0],
+                 [0, 1, 0, 0, 0, 0, 0, 0, 0],
+                 [0, 0, 1, 0, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 1, 0, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 1, 0, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 1, 0, 0, 0],
+                 [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                 [0, 0, 0, 0, 0, 0, 0, 1, 0],
+                 [0, 0, 0, 0, 0, 0, 0, 0, 1]], 1.0 / 9.0, 0.0
+            )
+        elif filtro == 'Encontrar bordes':
+            self.__aplicar_convolucion(
+               [[-1,  0, 0,  0,  0],
+                [ 0, -2, 0,  0,  0],
+                [ 0,  0, 6,  0,  0],
+                [ 0,  0, 0, -2,  0],
+                [ 0,  0, 0,  0, -1]], 1.0, 0.0
+            )
+        elif filtro == 'Sharpen':
+            self.__aplicar_convolucion(
+               [[-1, -1, -1],
+                [-1,  9, -1],
+                [-1, -1, -1]], 1.0, 0.0
+            )
+        elif filtro == 'Emboss':
+            self.__aplicar_convolucion(
+               [[-1, -1, -1, -1, 0],
+                [-1, -1, -1,  0, 1],
+                [-1, -1,  0,  1, 1],
+                [-1,  0,  1,  1, 1],
+                [ 0,  1,  1,  1, 1]], 1.0, 128.0
+            )
+        else:
+            raise ValueError("Ese filtro de convolucion no existe!")
+
+
+                

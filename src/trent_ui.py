@@ -1,5 +1,4 @@
 import PySimpleGUI as sg
-from PIL import Image
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from trent_procesador import PDI
@@ -25,13 +24,19 @@ def guardar_imagen():
 menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
             ['Imagen',['Filtros',
                         ['Grises',['Tono 1','Tono 2','Tono 3','Tono 4','Tono 5','Tono 6','Tono 7','Tono 8','Tono 9'],
-                            'Mosaico'],
-                        'Brillo',
+                        'Mosaico',
                         'Alto contraste',
                         'Inverso',
                         'Componentes RGB',
-                        'Deshacer']]]
+                        'Blur',['Suave','Fuerte'],
+                        'Motion Blur',
+                        'Encontrar bordes',
+                        'Sharpen',
+                        'Emboss'],
+                    'Brillo',
+                    'Deshacer']]]
 
+#
 
 # Organizacion de los componentes de la interfaz
 layout = [
@@ -185,10 +190,19 @@ while True:
                     window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
+
+    elif event in ('Suave','Fuerte','Motion Blur','Encontrar bordes','Sharpen','Emboss'):
+        
+        if pdi != None:
+            pdi.filtros_convolucion(event)
+            window["ORI-IMG"].update(data = pdi.get_img('m'))
                 
     elif event == 'Deshacer':
+
         if pdi != None:
             pdi.deshacer_filtro()
             window["ORI-IMG"].update(data = pdi.get_img('o'))
+
+    print(values)
 # Se cierra la ventana
 window.close()
