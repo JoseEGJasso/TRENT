@@ -1,6 +1,6 @@
 from PIL import Image
 import io
-
+import numpy as np
 
 class PDI(object):
     ''' Clase que se encarga de la lógica de cada uno de los filtros y modificaciones'''
@@ -10,10 +10,16 @@ class PDI(object):
 
             ruta: str. Ruta de la imagen '''
 
-        self.img_o = Image.open(ruta)     # Imagen original
-        self.img_m = self.img_o.copy()    # Imagen modificada
-        self.ancho = self.img_o.size[0]   # Número de pixeles a lo ancho de la imagen original
-        self.largo = self.img_o.size[1]   # Número de pixeles a lo largo de la imagen original
+        self.img_o = Image.open(ruta)                  # Imagen original
+        self.img_array = np.array(self.img_o)          # Imagen original transformada a arreglo
+        self.img_m = self.img_array.copy()             # Imagen modificada
+        self.ancho = np.size(self.img_array,axis = 1)  # Número de pixeles a lo ancho de la imagen original
+        self.largo = np.size(self.img_array,axis = 0)  # Número de pixeles a lo largo de la imagen original
+
+    def __modificar_rgb(self,x,y,rgb):
+
+        for z in range(0,3):
+            self.img_m.itemset((x,y,z),rgb[z])
 
 
     def __modificar_pixeles(self,ec):
@@ -21,11 +27,13 @@ class PDI(object):
         for i in range(0,self.ancho):
             for j in range(0,self.largo):
 
-                r = self.img_m.getpixel((i,j))[0]
-                g = self.img_m.getpixel((i,j))[1]
-                b = self.img_m.getpixel((i,j))[2]
+                r = self.img_array.item(j,i,0)
+                g = self.img_array.item(j,i,1)
+                b = self.img_array.item(j,i,2)
 
-                self.img_m.putpixel((i,j),ec(r,g,b))
+                new_rgb = ec(r,g,b)
+
+                self.__modificar_rgb(j,i,new_rgb)
 
 
     def __aplicar_filtro(self,ec):
@@ -34,24 +42,24 @@ class PDI(object):
 
             ec: function. Lambda a aplicar'''
 
-        self.deshacer_filtro()
+        #self.deshacer_filtro()
 
         for i in range(0,self.ancho):
             for j in range(0,self.largo):
 
-                r = self.img_m.getpixel((i,j))[0]
-                g = self.img_m.getpixel((i,j))[1]
-                b = self.img_m.getpixel((i,j))[2]
+                r = self.img_array.item(j,i,0)
+                g = self.img_array.item(j,i,1)
+                b = self.img_array.item(j,i,2)
 
                 value = ec(r,g,b)
 
-                self.img_m.putpixel((i,j),(value,value,value))
+                self.__modificar_rgb(j,i,(value,value,value))
 
 
     def deshacer_filtro(self):
         ''' Función que deshace los cambios realizados a la imagen'''
 
-        self.img_m = self.img_o.copy()
+        self.img_m = self.img_array.copy()
 
 
     def gris(self,tono):
@@ -86,20 +94,20 @@ class PDI(object):
 
             cons: int. Constante a sumar para modificar el brillo'''
 
-        self.deshacer_filtro()
+        #self.deshacer_filtro()
 
         for i in range(0,self.ancho):
             for j in range(0,self.largo):
 
-                r = self.img_m.getpixel((i,j))[0]
-                g = self.img_m.getpixel((i,j))[1]
-                b = self.img_m.getpixel((i,j))[2]
+                r = self.img_m.item(j,i,0)
+                g = self.img_m.item(j,i,1)
+                b = self.img_m.item(j,i,2)
 
                 n_r = 0 if (r+cons) < 0 else 255 if (r+cons) > 255 else int(r+cons)
                 n_g = 0 if (g+cons) < 0 else 255 if (g+cons) > 255 else int(g+cons)
                 n_b = 0 if (b+cons) < 0 else 255 if (b+cons) > 255 else int(b+cons)
 
-                self.img_m.putpixel((i,j),(n_r,n_g,n_b))
+                self.__modificar_rgb(j,i,(n_r,n_g,n_b))
 
 
     def __resize_img(self,aux,alto_nuevo,ancho_nuevo):
@@ -136,7 +144,7 @@ class PDI(object):
         if tipo_img == 'o':
             aux = self.img_o.copy()
         elif tipo_img == 'm':
-            aux = self.img_m.copy()
+            aux = Image.fromarray(self.img_m)
 
         return self.__resize_img(aux,700,700)
 
@@ -149,18 +157,20 @@ class PDI(object):
             
             ruta: str. Ruta donde se va a guardar la imagen'''
 
+        img_pil = Image.fromarray(self.img_m)
+
         if self.img_o.format == 'PNG':
             if ruta.endswith('.png'):
-                self.img_m.save(ruta,format = self.img_o.format)
+                img_pil.save(ruta,format = self.img_o.format)
                 return True
 
         elif self.img_o.format == 'JPEG':
             if ruta.endswith((".jpg",".jpeg")):
-                self.img_m.save(ruta, format = self.img_m.format)
+                img_pil.save(ruta, format = self.img_o.format)
                 return True
 
         elif self.img_o.format == None:
-            self.img_m.save(ruta)
+            img_pil.save(ruta)
             return True
 
         return False
@@ -172,7 +182,7 @@ class PDI(object):
             num_columnas: int. Ancho del mosaico
             num_filas: int. Largo del mosaico '''
 
-        self.deshacer_filtro()
+        #self.deshacer_filtro()
 
         for j in range(0,self.largo,num_filas):
             for i in range(0,self.ancho,num_columnas):    
@@ -194,8 +204,7 @@ class PDI(object):
                 while (c < i + num_columnas) and (c < self.ancho):
                     f = j
                     while (f < j + num_filas) and (f < self.largo):
-                        print((c,f))
-                        self.img_m.putpixel((c,f),new_rgb)
+                        self.__modificar_rgb(f,c,new_rgb)
                         f += 1
                     c += 1
 
@@ -220,9 +229,9 @@ class PDI(object):
         for j in range(fila_ini,fila_fin):
             for i in range(columna_ini,columna_fin):
 
-                r = self.img_m.getpixel((i,j))[0] 
-                g = self.img_m.getpixel((i,j))[1] 
-                b = self.img_m.getpixel((i,j))[2] 
+                r = self.img_array.item(j,i,0)
+                g = self.img_array.item(j,i,1)
+                b = self.img_array.item(j,i,2)
 
                 total_r += r
                 total_g += g
@@ -234,7 +243,7 @@ class PDI(object):
     def alto_contraste(self):
         ''' Función que aplica el filtro de alto contraste a la imagen original'''
 
-        self.deshacer_filtro()
+        #self.deshacer_filtro()
         self.gris('Tono 1')
 
         func = lambda r, g, b: (255,255,255) if r > 127 and g > 127 and b > 127 else (0,0,0)
@@ -245,7 +254,7 @@ class PDI(object):
     def inverso(self):
         ''' Función que aplica el filtro inverso a la imagen original'''
 
-        self.deshacer_filtro()
+        #self.deshacer_filtro()
         self.gris('Tono 1')
 
         func = lambda r, g, b: (0,0,0) if r > 127 and g > 127 and b > 127 else (255,255,255)
@@ -253,10 +262,10 @@ class PDI(object):
         self.__modificar_pixeles(func)
 
 
-    def modificar_rgb(self,new_r,new_g,new_b):
+    def modifica_rgb(self,new_r,new_g,new_b):
         ''' Función que aplica la capa RGB a la imagen original'''
 
-        self.deshacer_filtro()
+        #self.deshacer_filtro()
         
         func = lambda r, g, b: (new_r & r,new_g & g,new_b & b)
 
@@ -266,7 +275,7 @@ class PDI(object):
     def __aplicar_convolucion(self,filtro,factor,brillo):
         ''' Función que aplica a la imagen el filtro de convolución con el valor
             de brillo y factor recibidos'''
-            
+
         for y in range(0,self.largo):
             for x in range(0,self.ancho):
 
@@ -275,12 +284,12 @@ class PDI(object):
                 for f_y in range(0,len(filtro)):
                     for f_x in range(0,len(filtro[0])):
                         
-                        img_x = (x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho
-                        img_y = (y - len(filtro) / 2 + f_y + self.largo) % self.largo
+                        img_x = int((x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho)
+                        img_y = int((y - len(filtro) / 2 + f_y + self.largo) % self.largo)
 
-                        r = self.img_o.getpixel((img_x,img_y))[0]
-                        g = self.img_o.getpixel((img_x,img_y))[1]
-                        b = self.img_o.getpixel((img_x,img_y))[2]
+                        r = self.img_array.item(img_y,img_x,0)
+                        g = self.img_array.item(img_y,img_x,1)
+                        b = self.img_array.item(img_y,img_x,2)
 
                         suma_r += r * filtro[f_y][f_x]
                         suma_g += g * filtro[f_y][f_x]
@@ -290,7 +299,7 @@ class PDI(object):
                            min(max(int(factor * suma_g + brillo), 0), 255),
                            min(max(int(factor * suma_b + brillo), 0), 255))
 
-                self.img_m.putpixel((x,y),new_rgb)
+                self.__modificar_rgb(y,x,new_rgb)
 
     def filtros_convolucion(self,filtro):
         ''' Funcion que recibe un tipo de filtro de convolución y lo aplica con la matriz

@@ -56,9 +56,11 @@ while True:
 
     if event == sg.WIN_CLOSED or event == 'Salir': # if user closes window or clicks cancel
         break
+    
     elif event == 'Abrir':
+
         ruta = abrir_imagen()
-        print(ruta)
+
         if isinstance(ruta,str) and ruta != '':
             if ruta.endswith((".png", ".jpg", ".jpeg")):
                 pdi = PDI(ruta)
@@ -67,10 +69,10 @@ while True:
                 sg.popup('Formato de archivo inválido! (solo .png .jpg y .jpeg)',title = 'Error',keep_on_top = True)
 
     elif event == 'Guardar':
+
         if pdi != None:
             ruta = guardar_imagen()
             if ruta.endswith((".png", ".jpg", ".jpeg")):
-                print(ruta)
                 if pdi.guardar(ruta):
                     sg.popup("Guardado correctamente")
                 else:
@@ -82,11 +84,11 @@ while True:
 
 
     elif event == 'Cerrar':
+
         pdi = None
         window["ORI-IMG"].update(data = None)
 
     elif event in ('Tono 1' , 'Tono 2' , 'Tono 3' , 'Tono 4' , 'Tono 5' , 'Tono 6' , 'Tono 7' , 'Tono 8' , 'Tono 9'):
-        print(event)
 
         if pdi != None:
             pdi.gris(event)
@@ -95,6 +97,7 @@ while True:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
 
     elif event == 'Mosaico':
+
         if pdi != None:
 
             layout_m = [
@@ -186,7 +189,7 @@ while True:
                     n_g = int(val_rgb['v-verde'])
                     n_b = int(val_rgb['v-azul'])
 
-                    pdi.modificar_rgb(n_r,n_g,n_b)
+                    pdi.modifica_rgb(n_r,n_g,n_b)
                     window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
@@ -203,6 +206,5 @@ while True:
             pdi.deshacer_filtro()
             window["ORI-IMG"].update(data = pdi.get_img('o'))
 
-    print(values)
 # Se cierra la ventana
 window.close()
