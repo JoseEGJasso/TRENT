@@ -264,7 +264,9 @@ class PDI(object):
 
 
     def __aplicar_convolucion(self,filtro,factor,brillo):
-
+        ''' Función que aplica a la imagen el filtro de convolución con el valor
+            de brillo y factor recibidos'''
+            
         for y in range(0,self.largo):
             for x in range(0,self.ancho):
 
@@ -291,6 +293,8 @@ class PDI(object):
                 self.img_m.putpixel((x,y),new_rgb)
 
     def filtros_convolucion(self,filtro):
+        ''' Funcion que recibe un tipo de filtro de convolución y lo aplica con la matriz
+            y valores correspondientes'''
 
         if filtro == 'Suave':
             self.__aplicar_convolucion(
