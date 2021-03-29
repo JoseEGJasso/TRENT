@@ -17,12 +17,20 @@ class PDI(object):
         self.largo = np.size(self.img_array,axis = 0)  # Número de pixeles a lo largo de la imagen original
 
     def __modificar_rgb(self,x,y,rgb):
+        '''Función que modifica los valores RGB del pixel en la posición (x,y) 
+            x: int. Posición x del pixel
+            y: int. Posición y del pixel
+            rgb: list. Lista con los 3 nuevos valores del pixel'''
 
         for z in range(0,3):
             self.img_m.itemset((x,y,z),rgb[z])
 
 
     def __modificar_pixeles(self,ec):
+        ''' Función que aplica la función recibida a los valores RGB del pixel y
+            los nuevos valores generados por esta función se aplican al pixel
+
+            ec. function. Función a aplicar'''
 
         for i in range(0,self.ancho):
             for j in range(0,self.largo):
@@ -41,8 +49,6 @@ class PDI(object):
             a todos los pixeles de la imagen
 
             ec: function. Lambda a aplicar'''
-
-        #self.deshacer_filtro()
 
         for i in range(0,self.ancho):
             for j in range(0,self.largo):
@@ -93,8 +99,6 @@ class PDI(object):
         ''' Función que modifica el brillo de la imagen de acuerdo a la constante recibida
 
             cons: int. Constante a sumar para modificar el brillo'''
-
-        #self.deshacer_filtro()
 
         for i in range(0,self.ancho):
             for j in range(0,self.largo):
@@ -182,8 +186,6 @@ class PDI(object):
             num_columnas: int. Ancho del mosaico
             num_filas: int. Largo del mosaico '''
 
-        #self.deshacer_filtro()
-
         for j in range(0,self.largo,num_filas):
             for i in range(0,self.ancho,num_columnas):    
 
@@ -243,7 +245,6 @@ class PDI(object):
     def alto_contraste(self):
         ''' Función que aplica el filtro de alto contraste a la imagen original'''
 
-        #self.deshacer_filtro()
         self.gris('Tono 1')
 
         func = lambda r, g, b: (255,255,255) if r > 127 and g > 127 and b > 127 else (0,0,0)
@@ -254,7 +255,6 @@ class PDI(object):
     def inverso(self):
         ''' Función que aplica el filtro inverso a la imagen original'''
 
-        #self.deshacer_filtro()
         self.gris('Tono 1')
 
         func = lambda r, g, b: (0,0,0) if r > 127 and g > 127 and b > 127 else (255,255,255)
@@ -263,9 +263,12 @@ class PDI(object):
 
 
     def modifica_rgb(self,new_r,new_g,new_b):
-        ''' Función que aplica la capa RGB a la imagen original'''
-
-        #self.deshacer_filtro()
+        ''' Función que aplica la capa RGB con los valores recibidos a 
+        la imagen original
+        
+        new_r: int. Valor del color rojo
+        new_g: int. Valor del color verde
+        new_b: int. Valor del color azul'''
         
         func = lambda r, g, b: (new_r & r,new_g & g,new_b & b)
 
@@ -274,7 +277,11 @@ class PDI(object):
 
     def __aplicar_convolucion(self,filtro,factor,brillo):
         ''' Función que aplica a la imagen el filtro de convolución con el valor
-            de brillo y factor recibidos'''
+            de brillo y factor recibidos
+            
+            filtro: list. Matriz del filtro de convolución
+            factor: int. Valor del factor para aplicar el filtro
+            brillo: int. Valor del brillo'''
 
         for y in range(0,self.largo):
             for x in range(0,self.ancho):
@@ -303,7 +310,9 @@ class PDI(object):
 
     def filtros_convolucion(self,filtro):
         ''' Funcion que recibe un tipo de filtro de convolución y lo aplica con la matriz
-            y valores correspondientes'''
+            y valores correspondientes
+            
+            filtro: str. Filtro seleccionado que se va a aplicar'''
 
         if filtro == 'Suave':
             self.__aplicar_convolucion(
