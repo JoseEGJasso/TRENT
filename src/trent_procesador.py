@@ -103,9 +103,9 @@ class PDI(object):
         for i in range(0,self.ancho):
             for j in range(0,self.largo):
 
-                r = self.img_m.item(j,i,0)
-                g = self.img_m.item(j,i,1)
-                b = self.img_m.item(j,i,2)
+                r = self.img_array.item(j,i,0)
+                g = self.img_array.item(j,i,1)
+                b = self.img_array.item(j,i,2)
 
                 n_r = 0 if (r+cons) < 0 else 255 if (r+cons) > 255 else int(r+cons)
                 n_g = 0 if (g+cons) < 0 else 255 if (g+cons) > 255 else int(g+cons)
