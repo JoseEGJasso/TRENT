@@ -5,6 +5,7 @@ import numpy as np
 class PDI(object):
     ''' Clase que se encarga de la lógica de cada uno de los filtros y modificaciones'''
 
+
     def __init__(self, ruta):
         ''' Carga la imagen de acuerdo a la ruta 
 
@@ -15,6 +16,7 @@ class PDI(object):
         self.img_m = self.img_array.copy()             # Imagen modificada
         self.ancho = np.size(self.img_array,axis = 1)  # Número de pixeles a lo ancho de la imagen original
         self.largo = np.size(self.img_array,axis = 0)  # Número de pixeles a lo largo de la imagen original
+
 
     def __modificar_rgb(self,x,y,rgb):
         '''Función que modifica los valores RGB del pixel en la posición (x,y) 
@@ -44,24 +46,6 @@ class PDI(object):
                 self.__modificar_rgb(j,i,new_rgb)
 
 
-    def __aplicar_filtro(self,ec):
-        ''' Función que recibe una ecuación en forma de lambda para ser aplicada
-            a todos los pixeles de la imagen
-
-            ec: function. Lambda a aplicar'''
-
-        for i in range(0,self.ancho):
-            for j in range(0,self.largo):
-
-                r = self.img_array.item(j,i,0)
-                g = self.img_array.item(j,i,1)
-                b = self.img_array.item(j,i,2)
-
-                value = ec(r,g,b)
-
-                self.__modificar_rgb(j,i,(value,value,value))
-
-
     def deshacer_filtro(self):
         ''' Función que deshace los cambios realizados a la imagen'''
 
@@ -74,23 +58,23 @@ class PDI(object):
             tono: str. Tono de gris seleccionado para aplicar'''
 
         if tono == 'Tono 1':
-            self.__aplicar_filtro(lambda r, g, b : (r + g + b) // 3)
+            self.__modificar_pixeles(lambda r, g, b : tuple([(r + g + b) // 3]*3))
         elif tono == 'Tono 2':
-            self.__aplicar_filtro(lambda r, g, b : int(r*0.3 + g*0.59 + b*0.11))
+            self.__modificar_pixeles(lambda r, g, b : tuple([int(r*0.3 + g*0.59 + b*0.11)]*3))
         elif tono == 'Tono 3':
-            self.__aplicar_filtro(lambda r, g, b : int(r*0.2126 + g*0.7152 + b*0.0722) )
+            self.__modificar_pixeles(lambda r, g, b : tuple([int(r*0.2126 + g*0.7152 + b*0.0722)]*3))
         elif tono == 'Tono 4':
-            self.__aplicar_filtro(lambda r, g, b : (max(r,g,b) + min(r,g,b)) // 2)
+            self.__modificar_pixeles(lambda r, g, b : tuple([(max(r,g,b) + min(r,g,b)) // 2]*3))
         elif tono == 'Tono 5':
-            self.__aplicar_filtro(lambda r, g, b : max(r,g,b))
+            self.__modificar_pixeles(lambda r, g, b : tuple([max(r,g,b)]*3))
         elif tono == 'Tono 6':
-            self.__aplicar_filtro(lambda r, g, b : min(r,g,b))
+            self.__modificar_pixeles(lambda r, g, b : tuple([min(r,g,b)]*3))
         elif tono == 'Tono 7':
-            self.__aplicar_filtro(lambda r, g, b : r)
+            self.__modificar_pixeles(lambda r, g, b : tuple([r]*3))
         elif tono == 'Tono 8':
-            self.__aplicar_filtro(lambda r, g, b : g)
+            self.__modificar_pixeles(lambda r, g, b : tuple([g]*3))
         elif tono == 'Tono 9':
-            self.__aplicar_filtro(lambda r, g, b : b)
+            self.__modificar_pixeles(lambda r, g, b : tuple([b]*3))
         else:
             raise ValueError("Ese tono de gris no existe!")
 
@@ -100,18 +84,11 @@ class PDI(object):
 
             cons: int. Constante a sumar para modificar el brillo'''
 
-        for i in range(0,self.ancho):
-            for j in range(0,self.largo):
+        func = lambda r, g, b: (min(max(int(r+cons), 0), 255),
+                                min(max(int(g+cons), 0), 255),
+                                min(max(int(b+cons), 0), 255))
 
-                r = self.img_array.item(j,i,0)
-                g = self.img_array.item(j,i,1)
-                b = self.img_array.item(j,i,2)
-
-                n_r = 0 if (r+cons) < 0 else 255 if (r+cons) > 255 else int(r+cons)
-                n_g = 0 if (g+cons) < 0 else 255 if (g+cons) > 255 else int(g+cons)
-                n_b = 0 if (b+cons) < 0 else 255 if (b+cons) > 255 else int(b+cons)
-
-                self.__modificar_rgb(j,i,(n_r,n_g,n_b))
+        self.__modificar_pixeles(func)
 
 
     def __resize_img(self,aux,alto_nuevo,ancho_nuevo):
@@ -210,7 +187,6 @@ class PDI(object):
                         f += 1
                     c += 1
 
-        
 
     def __color_promedio(self,columna_ini,fila_ini,columna_fin,fila_fin):
         ''' Función auxiliar que calcula el color promedio de una parte
@@ -308,6 +284,7 @@ class PDI(object):
 
                 self.__modificar_rgb(y,x,new_rgb)
 
+
     def filtros_convolucion(self,filtro):
         ''' Funcion que recibe un tipo de filtro de convolución y lo aplica con la matriz
             y valores correspondientes
@@ -364,6 +341,3 @@ class PDI(object):
             )
         else:
             raise ValueError("Ese filtro de convolucion no existe!")
-
-
-                
