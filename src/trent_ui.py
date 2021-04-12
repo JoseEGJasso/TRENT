@@ -91,7 +91,7 @@ while True:
     elif event in ('Tono 1' , 'Tono 2' , 'Tono 3' , 'Tono 4' , 'Tono 5' , 'Tono 6' , 'Tono 7' , 'Tono 8' , 'Tono 9'):
 
         if pdi != None:
-            pdi.gris(event)
+            pdi.gris(int(event[-1]))
             window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
