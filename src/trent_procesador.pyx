@@ -1,27 +1,27 @@
-from PIL import Image
+# cython: language_level=3
 import io
+from PIL import Image
 import numpy as np
 
 cdef class PDI:
     ''' Clase que se encarga de la lógica de cada uno de los filtros y modificaciones'''
 
-    cdef unsigned char[:, :, :] img_o
-    cdef unsigned char[:, :, :] img_m
-    cdef int ancho
-    cdef int largo
-    cdef str img_formato
+    cdef unsigned char[:, :, :] img_o  # Imagen original transformada a arreglo
+    cdef unsigned char[:, :, :] img_m  # Imagen modificada
+    cdef int ancho                     # Número de pixeles a lo ancho de la imagen original
+    cdef int largo                     # Número de pixeles a lo largo de la imagen original
+    cdef str img_formato               # Formato de la imagen original
 
     def __cinit__(self, ruta):
-        ''' Carga la imagen de acuerdo a la ruta 
+        ''' Carga la imagen en un arreglo de acuerdo a la ruta 
 
             ruta: str. Ruta de la imagen '''
 
-        self.img_formato = Image.open(ruta).format
-
-        self.img_o = np.array(Image.open(ruta))          # Imagen original transformada a arreglo        
-        self.img_m = self.img_o.copy()             # Imagen modificada
-        self.ancho = np.size(self.img_o,axis = 1)  # Número de pixeles a lo ancho de la imagen original
-        self.largo = np.size(self.img_o,axis = 0)  # Número de pixeles a lo largo de la imagen original
+        self.img_formato = Image.open(ruta).format 
+        self.img_o = np.array(Image.open(ruta))            
+        self.img_m = self.img_o.copy()             
+        self.ancho = np.size(self.img_o,axis = 1)  
+        self.largo = np.size(self.img_o,axis = 0)  
 
 
     def __modificar_rgb(self, int x, int y, rgb):
@@ -202,7 +202,7 @@ cdef class PDI:
                     c += 1
 
 
-    def __color_promedio(self, int columna_ini, int fila_ini, int columna_fin, int fila_fin):
+    cdef int[:] __color_promedio(self, int columna_ini, int fila_ini, int columna_fin, int fila_fin):
         ''' Función auxiliar que calcula el color promedio de una parte
         de la imagen.
 
@@ -231,7 +231,9 @@ cdef class PDI:
                 total_g += g
                 total_b += b
 
-        cdef int[:] prom = np.array((total_r // total_pixeles,total_g // total_pixeles,total_b // total_pixeles),dtype=np.intc)
+        cdef int[:] prom = np.array((total_r // total_pixeles,
+                                     total_g // total_pixeles,
+                                     total_b // total_pixeles),dtype=np.intc)
 
         return prom
 
@@ -256,7 +258,7 @@ cdef class PDI:
         self.__modificar_pixeles(func)
 
 
-    def modifica_rgb(self, int new_r, int new_g, int new_b):
+    def capa_rgb(self, int new_r, int new_g, int new_b):
         ''' Función que aplica la capa RGB con los valores recibidos a 
         la imagen original
         
@@ -291,8 +293,8 @@ cdef class PDI:
                 for f_y in range(0,len(filtro)):
                     for f_x in range(0,len(filtro[0])):
                         
-                        img_x = (x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho
-                        img_y = (y - len(filtro) / 2 + f_y + self.largo) % self.largo
+                        img_x = int((x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho)
+                        img_y = int((y - len(filtro) / 2 + f_y + self.largo) % self.largo)
 
                         r = self.img_o[img_y,img_x,0]
                         g = self.img_o[img_y,img_x,1]
@@ -308,6 +310,7 @@ cdef class PDI:
 
                 self.__modificar_rgb(y,x,new_rgb)
 
+
     cdef void __aplicar_convolucion_d(self, double[:, :] filtro, double factor, double brillo):
         ''' Función que aplica a la imagen el filtro de convolución con el valor
             de brillo y factor recibidos
@@ -318,7 +321,7 @@ cdef class PDI:
 
         cdef int x,y
         cdef double suma_r, suma_g, suma_b
-        cdef int f_x,f_y,r,g,b
+        cdef int img_x,img_y,f_x,f_y,r,g,b
 
         cdef int[:] new_rgb
 
@@ -330,8 +333,8 @@ cdef class PDI:
                 for f_y in range(0,len(filtro)):
                     for f_x in range(0,len(filtro[0])):
                         
-                        img_x = (x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho
-                        img_y = (y - len(filtro) / 2 + f_y + self.largo) % self.largo
+                        img_x = int((x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho)
+                        img_y = int((y - len(filtro) / 2 + f_y + self.largo) % self.largo)
 
                         r = self.img_o[img_y,img_x,0]
                         g = self.img_o[img_y,img_x,1]

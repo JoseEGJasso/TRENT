@@ -99,7 +99,7 @@ while True:
     elif event == 'Mosaico':
 
         if pdi != None:
-
+            # Organización de los componentes del widget de brillo
             layout_m = [
                 [sg.Text('No. de columnas'),sg.In(size = (5,1),key = 'num_columnas')],
                 [sg.Text('No. de filas'),sg.In(size = (5,1),key = 'num_filas')],
@@ -189,7 +189,7 @@ while True:
                     n_g = int(val_rgb['v-verde'])
                     n_b = int(val_rgb['v-azul'])
 
-                    pdi.modifica_rgb(n_r,n_g,n_b)
+                    pdi.capa_rgb(n_r,n_g,n_b)
                     window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
