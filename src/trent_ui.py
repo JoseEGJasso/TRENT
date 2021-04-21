@@ -45,7 +45,7 @@ layout = [
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v1.1', layout,size = (800,500),element_justification = "center",)
+window = sg.Window('TRENT v2.0', layout,size = (800,500),element_justification = "center",)
 
 img = None
 pdi = None
@@ -91,7 +91,7 @@ while True:
     elif event in ('Tono 1' , 'Tono 2' , 'Tono 3' , 'Tono 4' , 'Tono 5' , 'Tono 6' , 'Tono 7' , 'Tono 8' , 'Tono 9'):
 
         if pdi != None:
-            pdi.gris(event)
+            pdi.gris(int(event[-1]))
             window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
@@ -99,7 +99,7 @@ while True:
     elif event == 'Mosaico':
 
         if pdi != None:
-
+            # Organización de los componentes del widget de brillo
             layout_m = [
                 [sg.Text('No. de columnas'),sg.In(size = (5,1),key = 'num_columnas')],
                 [sg.Text('No. de filas'),sg.In(size = (5,1),key = 'num_filas')],
@@ -189,7 +189,7 @@ while True:
                     n_g = int(val_rgb['v-verde'])
                     n_b = int(val_rgb['v-azul'])
 
-                    pdi.modifica_rgb(n_r,n_g,n_b)
+                    pdi.capa_rgb(n_r,n_g,n_b)
                     window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
