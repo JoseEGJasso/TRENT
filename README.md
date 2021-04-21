@@ -12,7 +12,7 @@ TRENT es un software de manipulación de imágenes como proyecto para la materia
                                         $ ./.../dist/linux-macos/TRENT    
     ```
 ## Novedades
-* ### v.2.0
+* ### v.1.1
     - Se agregan los filtros inverso y alto contraste
     - Se agregan los siguientes filtros de convolucion:
         - Blur suave
@@ -21,4 +21,6 @@ TRENT es un software de manipulación de imágenes como proyecto para la materia
         - Encontrar bordes
         - Sharpen
         - Emboss
-    - Optimización en los filtros al recorrer la imagen usando Cython
+    - Optimización en el guardado de la imagen usando arreglos de numpy
+* ### v.2.0
+    - Optimización en los filtros al recorrer la imagen usando Cython disminuyendo el tiempo de procesamiento de los filtros
