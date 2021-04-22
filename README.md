@@ -9,5 +9,18 @@ TRENT es un software de manipulación de imágenes como proyecto para la materia
     Para ejecutar en Linux o MacOs se debe abrir una terminal y ejecutar el archivo dentro de la carpeta ```linux-macos```, es decir:
 
     ``` 
-                    $ ./.../dist/linux-macos/TRENT    
+                                        $ ./.../dist/linux-macos/TRENT    
     ```
+## Novedades
+* ### v.1.1
+    - Se agregan los filtros inverso y alto contraste
+    - Se agregan los siguientes filtros de convolucion:
+        - Blur suave
+        - Blur fuerte
+        - Motion Blur
+        - Encontrar bordes
+        - Sharpen
+        - Emboss
+    - Optimización en el procesamiento de la imagen utilizando arreglos de numpy
+* ### v.2.0
+    - Optimización en los filtros al recorrer la imagen usando Cython, lo que mejora el tiempo de aplicación de los filtros considerablemente.
