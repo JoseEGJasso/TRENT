@@ -1,7 +1,7 @@
 # cython: language_level=3
 import io
-from PIL import Image
 import numpy as np
+from PIL import Image,ImageDraw,ImageFont
 
 cdef class PDI:
     ''' Clase que se encarga de la lógica de cada uno de los filtros y modificaciones'''
@@ -9,7 +9,7 @@ cdef class PDI:
     cdef unsigned char[:, :, :] img_o  # Imagen original transformada a arreglo
     cdef unsigned char[:, :, :] img_m  # Imagen modificada
     cdef int ancho                     # Número de pixeles a lo ancho de la imagen original
-    cdef int largo                     # Número de pixeles a lo largo de la imagen original
+    cdef int alto                     # Número de pixeles a lo alto de la imagen original
     cdef str img_formato               # Formato de la imagen original
 
     def __cinit__(self, ruta):
@@ -21,7 +21,7 @@ cdef class PDI:
         self.img_o = np.array(Image.open(ruta))            
         self.img_m = self.img_o.copy()             
         self.ancho = np.size(self.img_o,axis = 1)  
-        self.largo = np.size(self.img_o,axis = 0)  
+        self.alto = np.size(self.img_o,axis = 0)  
 
 
     def __modificar_rgb(self, int x, int y, rgb):
@@ -46,7 +46,7 @@ cdef class PDI:
         cdef int r, g, b
 
         for i in range(0,self.ancho):
-            for j in range(0,self.largo):
+            for j in range(0,self.alto):
 
                 r = self.img_o[j,i,0]
                 g = self.img_o[j,i,1]
@@ -60,7 +60,7 @@ cdef class PDI:
     def deshacer_filtro(self):
         ''' Función que deshace los cambios realizados a la imagen'''
 
-        self.img_m[...] = self.img_o
+        self.img_m = self.img_o.copy()
 
 
     def gris(self,char tono):
@@ -103,8 +103,8 @@ cdef class PDI:
 
 
     def __resize_img(self,aux,alto_nuevo,ancho_nuevo):
-        ''' Función que cambia el tamaño de la imagen de acuerdo a las nuevas
-            medidas recibidas. Regresa la imagen con el tamaño modificado en
+        ''' Función que cambia el tamanio de la imagen de acuerdo a las nuevas
+            medidas recibidas. Regresa la imagen con el tamanio modificado en
             forma de bytes y formarno PNG
             
             alto_nuevo: int. Nueva medida del alto
@@ -126,7 +126,7 @@ cdef class PDI:
 
 
     def get_img(self,tipo_img):
-        ''' Función que regresa la imagen original o modificada con tamaño modificado.
+        ''' Función que regresa la imagen original o modificada con tamanio modificado.
 
             Si recibe 'o' regresa la imagen original.
             Si recibe 'm' regresa la imagen modificada.
@@ -172,37 +172,37 @@ cdef class PDI:
         '''Función que aplica el filtro de mosaico a la imagen
 
             num_columnas: int. Ancho del mosaico
-            num_filas: int. Largo del mosaico '''
+            num_filas: int. alto del mosaico '''
 
         cdef int i,j,c,f
         cdef int[:] new_rgb
 
-        for j in range(0,self.largo,num_filas):
+        for j in range(0,self.alto,num_filas):
             for i in range(0,self.ancho,num_columnas):    
 
-                if (i + num_columnas > self.ancho) and (j + num_filas > self.largo):
-                    new_rgb = self.__color_promedio(i,j,self.ancho,self.largo)
+                if (i + num_columnas > self.ancho) and (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,self.alto,False)
 
                 elif (i + num_columnas > self.ancho):
-                    new_rgb = self.__color_promedio(i,j,self.ancho,j+num_filas)
+                    new_rgb = self.__color_promedio(i,j,self.ancho,j+num_filas,False)
 
-                elif (j + num_filas > self.largo):
-                    new_rgb = self.__color_promedio(i,j,i+num_columnas,self.largo)
+                elif (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,self.alto,False)
 
                 else:
-                    new_rgb = self.__color_promedio(i,j,i+num_columnas,j+num_filas)
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,j+num_filas,False)
 
                 c = i
 
                 while (c < i + num_columnas) and (c < self.ancho):
                     f = j
-                    while (f < j + num_filas) and (f < self.largo):
+                    while (f < j + num_filas) and (f < self.alto):
                         self.__modificar_rgb(f,c,new_rgb)
                         f += 1
                     c += 1
 
 
-    cdef int[:] __color_promedio(self, int columna_ini, int fila_ini, int columna_fin, int fila_fin):
+    cdef int[:] __color_promedio(self, int columna_ini, int fila_ini, int columna_fin, int fila_fin, bint doble_f):
         ''' Función auxiliar que calcula el color promedio de una parte
         de la imagen.
 
@@ -219,13 +219,19 @@ cdef class PDI:
         cdef int total_b = 0
 
         cdef int i,j,r,g,b
+        cdef unsigned char[:, :, :] aux
+
+        if doble_f:
+            aux = self.img_m
+        else:
+            aux = self.img_o
 
         for j in range(fila_ini,fila_fin):
             for i in range(columna_ini,columna_fin):
 
-                r = self.img_o[j,i,0]
-                g = self.img_o[j,i,1]
-                b = self.img_o[j,i,2]
+                r = aux[j,i,0]
+                g = aux[j,i,1]
+                b = aux[j,i,2]
 
                 total_r += r
                 total_g += g
@@ -285,7 +291,7 @@ cdef class PDI:
 
         cdef int[:] new_rgb
 
-        for y in range(0,self.largo):
+        for y in range(0,self.alto):
             for x in range(0,self.ancho):
                 
                 suma_r = suma_g = suma_b = 0
@@ -294,7 +300,7 @@ cdef class PDI:
                     for f_x in range(0,len(filtro[0])):
                         
                         img_x = int((x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho)
-                        img_y = int((y - len(filtro) / 2 + f_y + self.largo) % self.largo)
+                        img_y = int((y - len(filtro) / 2 + f_y + self.alto) % self.alto)
 
                         r = self.img_o[img_y,img_x,0]
                         g = self.img_o[img_y,img_x,1]
@@ -325,7 +331,7 @@ cdef class PDI:
 
         cdef int[:] new_rgb
 
-        for y in range(0,self.largo):
+        for y in range(0,self.alto):
             for x in range(0,self.ancho):
 
                 suma_r = suma_g = suma_b = 0
@@ -334,7 +340,7 @@ cdef class PDI:
                     for f_x in range(0,len(filtro[0])):
                         
                         img_x = int((x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho)
-                        img_y = int((y - len(filtro) / 2 + f_y + self.largo) % self.largo)
+                        img_y = int((y - len(filtro) / 2 + f_y + self.alto) % self.alto)
 
                         r = self.img_o[img_y,img_x,0]
                         g = self.img_o[img_y,img_x,1]
@@ -407,3 +413,62 @@ cdef class PDI:
             )
         else:
             raise ValueError("Ese filtro de convolucion no existe!")
+
+
+    def __tamanio_caracter(self,c,fnt):
+        ''' Función que calcula el tamanio de una cadena en pixeles de acuerdo
+            a la fuente de letra que se este usando
+
+            c: str. Cadena que se quiere saber su tamanio
+            fnt: ImageFont. Fuente de letra de la cadena'''
+
+        img_temp = Image.new("RGB",(10,10))
+        temp = ImageDraw.Draw(img_temp)
+
+        return temp.textsize(c,font= fnt)[0]
+
+
+    def filtros_letras(self, num_columnas, num_filas, opcion):
+
+        if opcion == 'm-cl':
+            self.letras(num_columnas,num_filas,'M',False)
+
+        if opcion == 'm-g':
+            self.gris(1)
+            self.letras(num_columnas,num_filas,'M',True)
+
+
+    def letras(self, int num_columnas, int num_filas, texto, bint doble_f):
+        ''' Función que cuadricula la imagen, calcula el color promedio
+            de cada region y por cada una de ellas genera una letra M 
+            del color promedio correpondiente
+
+            num_columnas: int. Ancho de la seccion
+            num_filas: int. alto de la seccion '''
+
+        fnt = ImageFont.truetype("./fonts/Minecraft.ttf", 10)
+
+        img_letras = Image.new("RGB",(self.ancho,self.alto),(255, 255, 255))
+        l = ImageDraw.Draw(img_letras)
+
+        cdef int i,j
+        cdef int[:] new_rgb
+
+        for j in range(0,self.alto,num_filas):
+            for i in range(0,self.ancho,num_columnas):    
+
+                if (i + num_columnas > self.ancho) and (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,self.alto,doble_f)
+
+                elif (i + num_columnas > self.ancho):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,j+num_filas,doble_f)
+
+                elif (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,self.alto,doble_f)
+
+                else:
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,j+num_filas,doble_f)
+
+                l.text((i,j),texto,fill=tuple(new_rgb),font=fnt)
+
+        self.img_m = np.array(img_letras)
