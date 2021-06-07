@@ -209,6 +209,7 @@ while True:
                 [sg.Radio('Solo letra M',"R-LETRAS",key='m-cl')],
                 [sg.Radio('Solo letra M con tono gris',"R-LETRAS",key='m-g')],
                 [sg.Radio('16 letras simulando 256 tonos',"R-LETRAS",key='ds-t')],
+                [sg.Radio('16 letras simulando 256 tonos a color',"R-LETRAS",key='ds-c')],
                 [sg.Radio('16 letras con tono gris',"R-LETRAS",key='ds-g')],
                 [sg.Radio('Texto personalizado',"R-LETRAS",key='tp-cl')],
                 [sg.Radio('Fichas de domino blancas',"R-LETRAS",key='db')],
@@ -222,15 +223,48 @@ while True:
             while True:
                 event_letras,val_letras = win_text.read()
 
-                opciones = ['m-cl','m-g','ds-t','ds-g','tp-cl','db','dn','nps']
+                opciones = ['m-cl','m-g','ds-t','ds-c','ds-g','tp-cl','db','dn','nps']
 
                 if event_letras == sg.WIN_CLOSED:
                     break
 
                 elif event_letras == 'ctn-letras':
+                    
+                    txt = None
+                    cerrar = False
 
                     for i in range(0,len(opciones)):
                         if win_text[opciones[i]].get():
+
+                            if opciones[i] == 'tp-cl':
+                                layout_txt = [
+                                    [sg.Text('Ingresa el texto que deseas poner en la imagen:')],
+                                    [sg.Input(size=(60,5), key = 'input-txt')],
+                                    [sg.Button('Continuar', key = 'ctn-txt')]
+                                ]
+
+                                win_txt = sg.Window('Ingresa el texto',layout_txt,element_justification = 'left',keep_on_top = True,modal = True)
+
+                                while True:
+
+                                    event_txt,values_txt = win_txt.read()
+
+                                    cerrar = False
+
+                                    if event_txt == sg.WIN_CLOSED:
+                                        cerrar = True
+                                        break
+                                    
+                                    elif event_txt == 'ctn-txt':
+                                        txt = values_txt['input-txt']
+                                        if txt == '':
+                                            sg.popup('Ingresa un texto! >:(',title = 'Error',keep_on_top = True)
+                                            continue
+                                        break
+
+                            if cerrar:
+                                break
+
                             layout_cdr = [
                                 [sg.Text('No. de columnas'),sg.In(size = (5,1),key = 'num_columnas')],
                                 [sg.Text('No. de filas'),sg.In(size = (5,1),key = 'num_filas')],
@@ -251,11 +285,16 @@ while True:
                                     except:
                                         sg.popup('Valor ingresado no es un entero',title = 'Error',keep_on_top = True)
                                         continue
-
-                                    pdi.filtros_letras(v_c,v_f,opciones[i])
+                                        
+                                    pdi.filtros_letras(v_c,v_f,opciones[i],txt)
                                     window["ORI-IMG"].update(data = pdi.get_img('m'))
+
                                     win_cdr.close()
                                     win_text.close()
+
+                                    if opciones[i] == 'tp-cl':
+                                        win_txt.close()
+                                        
                                     sg.popup_no_buttons('¡Proceso finalizado!',title = 'TRENT',auto_close = True,auto_close_duration = 3,keep_on_top = True)
                             break
                     

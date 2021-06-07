@@ -415,32 +415,69 @@ cdef class PDI:
             raise ValueError("Ese filtro de convolucion no existe!")
 
 
-    def __tamanio_caracter(self,c,fnt):
-        ''' Función que calcula el tamanio de una cadena en pixeles de acuerdo
-            a la fuente de letra que se este usando
+    def __selecciona_letra(self, int t_gris):
 
-            c: str. Cadena que se quiere saber su tamanio
-            fnt: ImageFont. Fuente de letra de la cadena'''
+        if 0 <= t_gris < 16:
+            return 'M'
+        if 16 <= t_gris < 32:
+            return 'N'
+        if 32 <= t_gris < 48:
+            return 'H'
+        if 48 <= t_gris < 64:
+            return '#'
+        if 64 <= t_gris < 80:
+            return 'Q'
+        if 80 <= t_gris < 96:
+            return 'U'
+        if 96 <= t_gris < 112:
+            return 'A'
+        if 112 <= t_gris < 128:
+            return 'D'
+        if 128 <= t_gris < 144:
+            return '0'
+        if 144 <= t_gris < 160:
+            return 'Y'
+        if 160 <= t_gris < 176:
+            return '2'
+        if 176 <= t_gris < 192:
+            return '$'
+        if 192 <= t_gris < 210:
+            return '%'
+        if 210 <= t_gris < 226:
+            return '+'
+        if 226 <= t_gris < 240:
+            return '.'
+        if 240 <= t_gris < 256:
+            return ' '
 
-        img_temp = Image.new("RGB",(10,10))
-        temp = ImageDraw.Draw(img_temp)
 
-        return temp.textsize(c,font= fnt)[0]
+    def coloca_letra(self, d, int i, int j, int[:] new_rgb, int cont, opcion, fnt, texto):
+
+        cdef int r,g,b
+
+        if opcion.startswith('m'):
+            d.text((i,j),'M',fill=tuple(new_rgb),font=fnt)
+            
+        elif opcion == 'ds-t':
+            d.text((i,j),self.__selecciona_letra(new_rgb[0]),fill=(0,0,0),font=fnt)
+
+        elif opcion == 'ds-c':
+            r = new_rgb[0]
+            g = new_rgb[1]
+            b = new_rgb[2]
+
+            d.text((i,j),self.__selecciona_letra((r + g + b) // 3),fill=tuple(new_rgb),font=fnt)
+
+        elif opcion == 'ds-g':
+            d.text((i,j),self.__selecciona_letra(new_rgb[0]),fill=tuple(new_rgb),font=fnt)
+
+        elif opcion == 'tp-cl':
+            d.text((i,j),texto[cont % len(texto)],fill=tuple(new_rgb),font=fnt)
 
 
-    def filtros_letras(self, num_columnas, num_filas, opcion):
-
-        if opcion == 'm-cl':
-            self.letras(num_columnas,num_filas,'M',False)
-
-        if opcion == 'm-g':
-            self.gris(1)
-            self.letras(num_columnas,num_filas,'M',True)
-
-
-    def letras(self, int num_columnas, int num_filas, texto, bint doble_f):
-        ''' Función que cuadricula la imagen, calcula el color promedio
-            de cada region y por cada una de ellas genera una letra M 
+    def genera_texto(self, int num_columnas, int num_filas, bint doble_f, opcion, texto = None):
+        ''' Función que cuadricula la imagen, calcula el color promedio de 
+            cada region y por cada una de ellas genera el texto indicado
             del color promedio correpondiente
 
             num_columnas: int. Ancho de la seccion
@@ -451,8 +488,10 @@ cdef class PDI:
         img_letras = Image.new("RGB",(self.ancho,self.alto),(255, 255, 255))
         l = ImageDraw.Draw(img_letras)
 
-        cdef int i,j
+        cdef int i,j,c
         cdef int[:] new_rgb
+
+        c = 0
 
         for j in range(0,self.alto,num_filas):
             for i in range(0,self.ancho,num_columnas):    
@@ -468,7 +507,20 @@ cdef class PDI:
 
                 else:
                     new_rgb = self.__color_promedio(i,j,i+num_columnas,j+num_filas,doble_f)
+                
+                self.coloca_letra(l,i,j,new_rgb,c,opcion,fnt,texto)
 
-                l.text((i,j),texto,fill=tuple(new_rgb),font=fnt)
+                c += 1
+                
 
         self.img_m = np.array(img_letras)
+
+
+    def filtros_letras(self, num_columnas, num_filas, opcion, txt = None):
+
+        if opcion in ['m-cl','ds-c','tp-cl']:
+            self.genera_texto(num_columnas,num_filas,False,opcion,txt)
+
+        if opcion in ['m-g','ds-t','ds-g']:
+            self.gris(1)
+            self.genera_texto(num_columnas,num_filas,True,opcion)
