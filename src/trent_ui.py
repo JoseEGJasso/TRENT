@@ -218,10 +218,10 @@ while True:
                 [sg.Button('Continuar',key='ctn-letras')]
             ]
 
-            win_text = sg.Window('Convertir a letras',layout_letras,element_justification = 'left',keep_on_top = True,modal = True)
+            win_letras = sg.Window('Convertir a letras',layout_letras,element_justification = 'left',keep_on_top = True,modal = True)
 
             while True:
-                event_letras,val_letras = win_text.read()
+                event_letras,val_letras = win_letras.read()
 
                 opciones = ['m-cl','m-g','ds-t','ds-c','ds-g','tp-cl','db','dn','nps']
 
@@ -234,7 +234,7 @@ while True:
                     cerrar = False
 
                     for i in range(0,len(opciones)):
-                        if win_text[opciones[i]].get():
+                        if win_letras[opciones[i]].get():
 
                             if opciones[i] == 'tp-cl':
                                 layout_txt = [
@@ -265,13 +265,21 @@ while True:
                             if cerrar:
                                 break
 
+                            if opciones[i] in ['db','dn']:
+                                info = 'Se recomienda el tamaño 12x12'
+                            elif opciones[i] == 'nps':
+                                info = 'Se recomienda el tamaño 11x13'
+                            else:
+                                info = 'Se recomienda el tamaño 8x8'
+
                             layout_cdr = [
+                                [sg.Text(info,key='txt-recom')],
                                 [sg.Text('No. de columnas'),sg.In(size = (5,1),key = 'num_columnas')],
                                 [sg.Text('No. de filas'),sg.In(size = (5,1),key = 'num_filas')],
                                 [sg.Button('Aplicar',key = 'apl-cdr')]
                             ]
 
-                            win_cdr = sg.Window('Tamaño mosaico',layout_cdr,element_justification = 'center',keep_on_top = True,modal = True,size = (200,100))
+                            win_cdr = sg.Window('Tamaño cuadricula',layout_cdr,element_justification = 'center',keep_on_top = True,modal = True,size = (222,130))
 
                             while True:
                                 event_cdr,values_cdr = win_cdr.read()
@@ -290,11 +298,11 @@ while True:
                                     window["ORI-IMG"].update(data = pdi.get_img('m'))
 
                                     win_cdr.close()
-                                    win_text.close()
+                                    win_letras.close()
 
                                     if opciones[i] == 'tp-cl':
                                         win_txt.close()
-                                        
+
                                     sg.popup_no_buttons('¡Proceso finalizado!',title = 'TRENT',auto_close = True,auto_close_duration = 3,keep_on_top = True)
                             break
                     

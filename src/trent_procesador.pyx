@@ -416,42 +416,163 @@ cdef class PDI:
 
 
     def __selecciona_letra(self, int t_gris):
+        ''' Función que regresa una letra de acuerdo al tono de gris ingresado
+            
+            t_gris: int. Valor de tono de gris'''
 
         if 0 <= t_gris < 16:
             return 'M'
-        if 16 <= t_gris < 32:
+        elif 16 <= t_gris < 32:
             return 'N'
-        if 32 <= t_gris < 48:
+        elif 32 <= t_gris < 48:
             return 'H'
-        if 48 <= t_gris < 64:
+        elif 48 <= t_gris < 64:
             return '#'
-        if 64 <= t_gris < 80:
+        elif 64 <= t_gris < 80:
             return 'Q'
-        if 80 <= t_gris < 96:
+        elif 80 <= t_gris < 96:
             return 'U'
-        if 96 <= t_gris < 112:
+        elif 96 <= t_gris < 112:
             return 'A'
-        if 112 <= t_gris < 128:
+        elif 112 <= t_gris < 128:
             return 'D'
-        if 128 <= t_gris < 144:
+        elif 128 <= t_gris < 144:
             return '0'
-        if 144 <= t_gris < 160:
+        elif 144 <= t_gris < 160:
             return 'Y'
-        if 160 <= t_gris < 176:
+        elif 160 <= t_gris < 176:
             return '2'
-        if 176 <= t_gris < 192:
+        elif 176 <= t_gris < 192:
             return '$'
-        if 192 <= t_gris < 210:
+        elif 192 <= t_gris < 210:
             return '%'
-        if 210 <= t_gris < 226:
+        elif 210 <= t_gris < 226:
             return '+'
-        if 226 <= t_gris < 240:
+        elif 226 <= t_gris < 240:
             return '.'
-        if 240 <= t_gris < 256:
+        elif 240 <= t_gris < 256:
             return ' '
 
 
+    def __selecciona_domino_b(self, int tono, int cont):
+        ''' Funcion que regresa una letra con fuente de letra de domino
+            blanco de acuerdo al valor del tono y si se necesita ficha 
+            izquierda o derecha
+            
+            tono: int. Valor del tono 
+            cont: int. Contador de letras colocadas'''
+
+        if (cont + 1) % 2 == 0:
+            if 0 <= tono < 37:
+                return '^'
+            elif 37 <= tono < 73:
+                return '%'
+            elif 73 <= tono < 109:
+                return '$'
+            elif 109 <= tono < 145:
+                return '#'
+            elif 145 <= tono < 181:
+                return '@'
+            elif 181 <= tono < 217:
+                return '!'
+            elif 217 <= tono < 256:
+                return ')'
+        else:
+            if 0 <= tono < 37:
+                return '6'
+            elif 37 <= tono < 73:
+                return '5'
+            elif 73 <= tono < 109:
+                return '4'
+            elif 109 <= tono < 145:
+                return '3'
+            elif 145 <= tono < 181:
+                return '2'
+            elif 181 <= tono < 217:
+                return '1'
+            elif 217 <= tono < 256:
+                return '0'
+
+
+    def __selecciona_domino_n(self, int tono, int cont):
+        ''' Funcion que regresa una letra con fuente de letra de domino
+            negro de acuerdo al valor del tono y si se necesita ficha 
+            izquierda o derecha
+            
+            tono: int. Valor del tono 
+            cont: int. Contador de letras colocadas'''
+
+        if (cont + 1) % 2 == 0:
+            if 0 <= tono < 37:
+                return ')'
+            elif 37 <= tono < 73:
+                return '!'
+            elif 73 <= tono < 109:
+                return '@'
+            elif 109 <= tono < 145:
+                return '#'
+            elif 145 <= tono < 181:
+                return '$'
+            elif 181 <= tono < 217:
+                return '%'
+            elif 217 <= tono < 256:
+                return '^'
+        else:
+            if 0 <= tono < 37:
+                return '0'
+            elif 37 <= tono < 73:
+                return '1'
+            elif 73 <= tono < 109:
+                return '2'
+            elif 109 <= tono < 145:
+                return '3'
+            elif 145 <= tono < 181:
+                return '4'
+            elif 181 <= tono < 217:
+                return '5'
+            elif 217 <= tono < 256:
+                return '6'
+
+
+    def __selecciona_naipe(self, int t_gris):
+        ''' Función que regresa una letra de acuerdo al tono de gris ingresado
+            
+            t_gris: int. Valor de tono de gris'''
+
+        if 0 <= t_gris < 26:
+            return 'J'
+        elif 26 <= t_gris < 51:
+            return 'I'
+        elif 51 <= t_gris < 76:
+            return 'H'
+        elif 76 <= t_gris < 101:
+            return 'G'
+        elif 101 <= t_gris < 126:
+            return 'F'
+        elif 126 <= t_gris < 151:
+            return 'E'
+        elif 151 <= t_gris < 176:
+            return 'D'
+        elif 176 <= t_gris < 201:
+            return 'C'
+        elif 201 <= t_gris < 226:
+            return 'B'
+        elif 226 <= t_gris < 256:
+            return 'A'
+
+
+
     def coloca_letra(self, d, int i, int j, int[:] new_rgb, int cont, opcion, fnt, texto):
+        ''' Función que dibuja una letra en la posición indicada y se 
+            modifica de acuerdo a la opcion seleccionada por el usuario
+            
+            d: ImageDraw. Canvas para dibujar las letras
+            i: int. Valor de x en el canvas
+            j: int. Valor de y en el canvas
+            new_rgb: int. Color promedio de la cuadricula
+            cont: int. Contador de letras colocadas
+            opcion: str. Opcion seleccionada por el ususario
+            texto: str. Texto personalizado ingresado por el usuario'''
 
         cdef int r,g,b
 
@@ -474,6 +595,31 @@ cdef class PDI:
         elif opcion == 'tp-cl':
             d.text((i,j),texto[cont % len(texto)],fill=tuple(new_rgb),font=fnt)
 
+        elif opcion == 'db':
+            d.text((i,j),self.__selecciona_domino_b(new_rgb[0],cont),fill=(0,0,0),font=fnt)
+
+        elif opcion == 'dn':
+            d.text((i,j),self.__selecciona_domino_n(new_rgb[0],cont),fill=(0,0,0),font=fnt)
+
+        elif opcion == 'nps':
+            d.text((i,j),self.__selecciona_naipe(new_rgb[0]),fill=(0,0,0),font=fnt)
+
+
+    def selecciona_fuente(self, opcion):
+        ''' Funcion que selecciona la fuente de letra de acuerdo
+            a la opcion elegida
+            
+            opcion: str. Opcion elegida por el usuario'''
+
+        if opcion == 'db':
+            return ImageFont.truetype("./fonts/Lasvwd__.otf",11)
+        elif opcion == 'dn':
+            return ImageFont.truetype("./fonts/Lasvbld_.otf",11)
+        elif opcion == 'nps':
+            return ImageFont.truetype("./fonts/PLAYCRDS.otf",17)
+        else:
+            return ImageFont.truetype("./fonts/Minecraft.ttf", 10)
+
 
     def genera_texto(self, int num_columnas, int num_filas, bint doble_f, opcion, texto = None):
         ''' Función que cuadricula la imagen, calcula el color promedio de 
@@ -481,9 +627,13 @@ cdef class PDI:
             del color promedio correpondiente
 
             num_columnas: int. Ancho de la seccion
-            num_filas: int. alto de la seccion '''
+            num_filas: int. alto de la seccion 
+            doble_f: bint. Valor que determina si se van aplicar dos filtros
+                           consecutivos
+            opcion: str. Opcion seleccionada por el usuario
+            texto: str. Texto personalizado ingresado por el usuario'''
 
-        fnt = ImageFont.truetype("./fonts/Minecraft.ttf", 10)
+        fnt = self.selecciona_fuente(opcion)
 
         img_letras = Image.new("RGB",(self.ancho,self.alto),(255, 255, 255))
         l = ImageDraw.Draw(img_letras)
@@ -494,7 +644,7 @@ cdef class PDI:
         c = 0
 
         for j in range(0,self.alto,num_filas):
-            for i in range(0,self.ancho,num_columnas):    
+            for i in range(0,self.ancho,num_columnas):
 
                 if (i + num_columnas > self.ancho) and (j + num_filas > self.alto):
                     new_rgb = self.__color_promedio(i,j,self.ancho,self.alto,doble_f)
@@ -517,10 +667,17 @@ cdef class PDI:
 
 
     def filtros_letras(self, num_columnas, num_filas, opcion, txt = None):
-
+        ''' Funcion que realiza la llamada correspondiente para generar texto 
+            en el canvas de acuerdo a la opcion seleccionada
+            
+            num_columnas: int. Ancho de la seccion
+            num_filas: int. alto de la seccion             
+            opcion: str. Opcion seleccionada por el usuario
+            txt: str. Texto personalizado ingresado por el usuario
+            '''
         if opcion in ['m-cl','ds-c','tp-cl']:
             self.genera_texto(num_columnas,num_filas,False,opcion,txt)
 
-        if opcion in ['m-g','ds-t','ds-g']:
+        if opcion in ['m-g','ds-t','ds-g','dn','db','nps']:
             self.gris(1)
             self.genera_texto(num_columnas,num_filas,True,opcion)
