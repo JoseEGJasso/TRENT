@@ -1,5 +1,7 @@
 # cython: language_level=3
 import io
+import sys
+import os.path
 import numpy as np
 from PIL import Image,ImageDraw,ImageFont
 
@@ -605,6 +607,11 @@ cdef class PDI:
             d.text((i,j),self.__selecciona_naipe(new_rgb[0]),fill=(0,0,0),font=fnt)
 
 
+    def __ruta_recurso(self, rtv):
+        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(base_path, rtv)
+
+
     def selecciona_fuente(self, opcion):
         ''' Funcion que selecciona la fuente de letra de acuerdo
             a la opcion elegida
@@ -612,13 +619,13 @@ cdef class PDI:
             opcion: str. Opcion elegida por el usuario'''
 
         if opcion == 'db':
-            return ImageFont.truetype("./fonts/Lasvwd__.otf",11)
+            return ImageFont.truetype(self.__ruta_recurso('fonts/Lasvwd__.otf'),11)
         elif opcion == 'dn':
-            return ImageFont.truetype("./fonts/Lasvbld_.otf",11)
+            return ImageFont.truetype(self.__ruta_recurso('fonts/Lasvbld_.otf'),11)
         elif opcion == 'nps':
-            return ImageFont.truetype("./fonts/PLAYCRDS.otf",17)
+            return ImageFont.truetype(self.__ruta_recurso('fonts/PLAYCRDS.otf'),17)
         else:
-            return ImageFont.truetype("./fonts/Minecraft.ttf", 10)
+            return ImageFont.truetype(self.__ruta_recurso('fonts/Minecraft.ttf'),10)
 
 
     def genera_texto(self, int num_columnas, int num_filas, bint doble_f, opcion, texto = None):
