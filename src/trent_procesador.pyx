@@ -1,7 +1,9 @@
 # cython: language_level=3
 import io
-from PIL import Image
+import sys
+import os.path
 import numpy as np
+from PIL import Image,ImageDraw,ImageFont
 
 cdef class PDI:
     ''' Clase que se encarga de la lógica de cada uno de los filtros y modificaciones'''
@@ -9,7 +11,7 @@ cdef class PDI:
     cdef unsigned char[:, :, :] img_o  # Imagen original transformada a arreglo
     cdef unsigned char[:, :, :] img_m  # Imagen modificada
     cdef int ancho                     # Número de pixeles a lo ancho de la imagen original
-    cdef int largo                     # Número de pixeles a lo largo de la imagen original
+    cdef int alto                     # Número de pixeles a lo alto de la imagen original
     cdef str img_formato               # Formato de la imagen original
 
     def __cinit__(self, ruta):
@@ -21,7 +23,7 @@ cdef class PDI:
         self.img_o = np.array(Image.open(ruta))            
         self.img_m = self.img_o.copy()             
         self.ancho = np.size(self.img_o,axis = 1)  
-        self.largo = np.size(self.img_o,axis = 0)  
+        self.alto = np.size(self.img_o,axis = 0)  
 
 
     def __modificar_rgb(self, int x, int y, rgb):
@@ -46,7 +48,7 @@ cdef class PDI:
         cdef int r, g, b
 
         for i in range(0,self.ancho):
-            for j in range(0,self.largo):
+            for j in range(0,self.alto):
 
                 r = self.img_o[j,i,0]
                 g = self.img_o[j,i,1]
@@ -60,7 +62,7 @@ cdef class PDI:
     def deshacer_filtro(self):
         ''' Función que deshace los cambios realizados a la imagen'''
 
-        self.img_m[...] = self.img_o
+        self.img_m = self.img_o.copy()
 
 
     def gris(self,char tono):
@@ -103,8 +105,8 @@ cdef class PDI:
 
 
     def __resize_img(self,aux,alto_nuevo,ancho_nuevo):
-        ''' Función que cambia el tamaño de la imagen de acuerdo a las nuevas
-            medidas recibidas. Regresa la imagen con el tamaño modificado en
+        ''' Función que cambia el tamanio de la imagen de acuerdo a las nuevas
+            medidas recibidas. Regresa la imagen con el tamanio modificado en
             forma de bytes y formarno PNG
             
             alto_nuevo: int. Nueva medida del alto
@@ -126,7 +128,7 @@ cdef class PDI:
 
 
     def get_img(self,tipo_img):
-        ''' Función que regresa la imagen original o modificada con tamaño modificado.
+        ''' Función que regresa la imagen original o modificada con tamanio modificado.
 
             Si recibe 'o' regresa la imagen original.
             Si recibe 'm' regresa la imagen modificada.
@@ -172,37 +174,37 @@ cdef class PDI:
         '''Función que aplica el filtro de mosaico a la imagen
 
             num_columnas: int. Ancho del mosaico
-            num_filas: int. Largo del mosaico '''
+            num_filas: int. alto del mosaico '''
 
         cdef int i,j,c,f
         cdef int[:] new_rgb
 
-        for j in range(0,self.largo,num_filas):
+        for j in range(0,self.alto,num_filas):
             for i in range(0,self.ancho,num_columnas):    
 
-                if (i + num_columnas > self.ancho) and (j + num_filas > self.largo):
-                    new_rgb = self.__color_promedio(i,j,self.ancho,self.largo)
+                if (i + num_columnas > self.ancho) and (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,self.alto,False)
 
                 elif (i + num_columnas > self.ancho):
-                    new_rgb = self.__color_promedio(i,j,self.ancho,j+num_filas)
+                    new_rgb = self.__color_promedio(i,j,self.ancho,j+num_filas,False)
 
-                elif (j + num_filas > self.largo):
-                    new_rgb = self.__color_promedio(i,j,i+num_columnas,self.largo)
+                elif (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,self.alto,False)
 
                 else:
-                    new_rgb = self.__color_promedio(i,j,i+num_columnas,j+num_filas)
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,j+num_filas,False)
 
                 c = i
 
                 while (c < i + num_columnas) and (c < self.ancho):
                     f = j
-                    while (f < j + num_filas) and (f < self.largo):
+                    while (f < j + num_filas) and (f < self.alto):
                         self.__modificar_rgb(f,c,new_rgb)
                         f += 1
                     c += 1
 
 
-    cdef int[:] __color_promedio(self, int columna_ini, int fila_ini, int columna_fin, int fila_fin):
+    cdef int[:] __color_promedio(self, int columna_ini, int fila_ini, int columna_fin, int fila_fin, bint doble_f):
         ''' Función auxiliar que calcula el color promedio de una parte
         de la imagen.
 
@@ -219,13 +221,19 @@ cdef class PDI:
         cdef int total_b = 0
 
         cdef int i,j,r,g,b
+        cdef unsigned char[:, :, :] aux
+
+        if doble_f:
+            aux = self.img_m
+        else:
+            aux = self.img_o
 
         for j in range(fila_ini,fila_fin):
             for i in range(columna_ini,columna_fin):
 
-                r = self.img_o[j,i,0]
-                g = self.img_o[j,i,1]
-                b = self.img_o[j,i,2]
+                r = aux[j,i,0]
+                g = aux[j,i,1]
+                b = aux[j,i,2]
 
                 total_r += r
                 total_g += g
@@ -285,7 +293,7 @@ cdef class PDI:
 
         cdef int[:] new_rgb
 
-        for y in range(0,self.largo):
+        for y in range(0,self.alto):
             for x in range(0,self.ancho):
                 
                 suma_r = suma_g = suma_b = 0
@@ -294,7 +302,7 @@ cdef class PDI:
                     for f_x in range(0,len(filtro[0])):
                         
                         img_x = int((x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho)
-                        img_y = int((y - len(filtro) / 2 + f_y + self.largo) % self.largo)
+                        img_y = int((y - len(filtro) / 2 + f_y + self.alto) % self.alto)
 
                         r = self.img_o[img_y,img_x,0]
                         g = self.img_o[img_y,img_x,1]
@@ -325,7 +333,7 @@ cdef class PDI:
 
         cdef int[:] new_rgb
 
-        for y in range(0,self.largo):
+        for y in range(0,self.alto):
             for x in range(0,self.ancho):
 
                 suma_r = suma_g = suma_b = 0
@@ -334,7 +342,7 @@ cdef class PDI:
                     for f_x in range(0,len(filtro[0])):
                         
                         img_x = int((x - len(filtro[0]) / 2 + f_x + self.ancho) % self.ancho)
-                        img_y = int((y - len(filtro) / 2 + f_y + self.largo) % self.largo)
+                        img_y = int((y - len(filtro) / 2 + f_y + self.alto) % self.alto)
 
                         r = self.img_o[img_y,img_x,0]
                         g = self.img_o[img_y,img_x,1]
@@ -407,3 +415,276 @@ cdef class PDI:
             )
         else:
             raise ValueError("Ese filtro de convolucion no existe!")
+
+
+    def __selecciona_letra(self, int t_gris):
+        ''' Función que regresa una letra de acuerdo al tono de gris ingresado
+            
+            t_gris: int. Valor de tono de gris'''
+
+        if 0 <= t_gris < 16:
+            return 'M'
+        elif 16 <= t_gris < 32:
+            return 'N'
+        elif 32 <= t_gris < 48:
+            return 'H'
+        elif 48 <= t_gris < 64:
+            return '#'
+        elif 64 <= t_gris < 80:
+            return 'Q'
+        elif 80 <= t_gris < 96:
+            return 'U'
+        elif 96 <= t_gris < 112:
+            return 'A'
+        elif 112 <= t_gris < 128:
+            return 'D'
+        elif 128 <= t_gris < 144:
+            return '0'
+        elif 144 <= t_gris < 160:
+            return 'Y'
+        elif 160 <= t_gris < 176:
+            return '2'
+        elif 176 <= t_gris < 192:
+            return '$'
+        elif 192 <= t_gris < 210:
+            return '%'
+        elif 210 <= t_gris < 226:
+            return '+'
+        elif 226 <= t_gris < 240:
+            return '.'
+        elif 240 <= t_gris < 256:
+            return ' '
+
+
+    def __selecciona_domino_b(self, int tono, int cont):
+        ''' Funcion que regresa una letra con fuente de letra de domino
+            blanco de acuerdo al valor del tono y si se necesita ficha 
+            izquierda o derecha
+            
+            tono: int. Valor del tono 
+            cont: int. Contador de letras colocadas'''
+
+        if (cont + 1) % 2 == 0:
+            if 0 <= tono < 37:
+                return '^'
+            elif 37 <= tono < 73:
+                return '%'
+            elif 73 <= tono < 109:
+                return '$'
+            elif 109 <= tono < 145:
+                return '#'
+            elif 145 <= tono < 181:
+                return '@'
+            elif 181 <= tono < 217:
+                return '!'
+            elif 217 <= tono < 256:
+                return ')'
+        else:
+            if 0 <= tono < 37:
+                return '6'
+            elif 37 <= tono < 73:
+                return '5'
+            elif 73 <= tono < 109:
+                return '4'
+            elif 109 <= tono < 145:
+                return '3'
+            elif 145 <= tono < 181:
+                return '2'
+            elif 181 <= tono < 217:
+                return '1'
+            elif 217 <= tono < 256:
+                return '0'
+
+
+    def __selecciona_domino_n(self, int tono, int cont):
+        ''' Funcion que regresa una letra con fuente de letra de domino
+            negro de acuerdo al valor del tono y si se necesita ficha 
+            izquierda o derecha
+            
+            tono: int. Valor del tono 
+            cont: int. Contador de letras colocadas'''
+
+        if (cont + 1) % 2 == 0:
+            if 0 <= tono < 37:
+                return ')'
+            elif 37 <= tono < 73:
+                return '!'
+            elif 73 <= tono < 109:
+                return '@'
+            elif 109 <= tono < 145:
+                return '#'
+            elif 145 <= tono < 181:
+                return '$'
+            elif 181 <= tono < 217:
+                return '%'
+            elif 217 <= tono < 256:
+                return '^'
+        else:
+            if 0 <= tono < 37:
+                return '0'
+            elif 37 <= tono < 73:
+                return '1'
+            elif 73 <= tono < 109:
+                return '2'
+            elif 109 <= tono < 145:
+                return '3'
+            elif 145 <= tono < 181:
+                return '4'
+            elif 181 <= tono < 217:
+                return '5'
+            elif 217 <= tono < 256:
+                return '6'
+
+
+    def __selecciona_naipe(self, int t_gris):
+        ''' Función que regresa una letra de acuerdo al tono de gris ingresado
+            
+            t_gris: int. Valor de tono de gris'''
+
+        if 0 <= t_gris < 26:
+            return 'J'
+        elif 26 <= t_gris < 51:
+            return 'I'
+        elif 51 <= t_gris < 76:
+            return 'H'
+        elif 76 <= t_gris < 101:
+            return 'G'
+        elif 101 <= t_gris < 126:
+            return 'F'
+        elif 126 <= t_gris < 151:
+            return 'E'
+        elif 151 <= t_gris < 176:
+            return 'D'
+        elif 176 <= t_gris < 201:
+            return 'C'
+        elif 201 <= t_gris < 226:
+            return 'B'
+        elif 226 <= t_gris < 256:
+            return 'A'
+
+
+
+    def coloca_letra(self, d, int i, int j, int[:] new_rgb, int cont, opcion, fnt, texto):
+        ''' Función que dibuja una letra en la posición indicada y se 
+            modifica de acuerdo a la opcion seleccionada por el usuario
+            
+            d: ImageDraw. Canvas para dibujar las letras
+            i: int. Valor de x en el canvas
+            j: int. Valor de y en el canvas
+            new_rgb: int. Color promedio de la cuadricula
+            cont: int. Contador de letras colocadas
+            opcion: str. Opcion seleccionada por el ususario
+            texto: str. Texto personalizado ingresado por el usuario'''
+
+        cdef int r,g,b
+
+        if opcion.startswith('m'):
+            d.text((i,j),'M',fill=tuple(new_rgb),font=fnt)
+            
+        elif opcion == 'ds-t':
+            d.text((i,j),self.__selecciona_letra(new_rgb[0]),fill=(0,0,0),font=fnt)
+
+        elif opcion == 'ds-c':
+            r = new_rgb[0]
+            g = new_rgb[1]
+            b = new_rgb[2]
+
+            d.text((i,j),self.__selecciona_letra((r + g + b) // 3),fill=tuple(new_rgb),font=fnt)
+
+        elif opcion == 'ds-g':
+            d.text((i,j),self.__selecciona_letra(new_rgb[0]),fill=tuple(new_rgb),font=fnt)
+
+        elif opcion == 'tp-cl':
+            d.text((i,j),texto[cont % len(texto)],fill=tuple(new_rgb),font=fnt)
+
+        elif opcion == 'db':
+            d.text((i,j),self.__selecciona_domino_b(new_rgb[0],cont),fill=(0,0,0),font=fnt)
+
+        elif opcion == 'dn':
+            d.text((i,j),self.__selecciona_domino_n(new_rgb[0],cont),fill=(0,0,0),font=fnt)
+
+        elif opcion == 'nps':
+            d.text((i,j),self.__selecciona_naipe(new_rgb[0]),fill=(0,0,0),font=fnt)
+
+
+    def __ruta_recurso(self, rtv):
+        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(base_path, rtv)
+
+
+    def selecciona_fuente(self, opcion):
+        ''' Funcion que selecciona la fuente de letra de acuerdo
+            a la opcion elegida
+            
+            opcion: str. Opcion elegida por el usuario'''
+
+        if opcion == 'db':
+            return ImageFont.truetype(self.__ruta_recurso('fonts/Lasvwd__.otf'),11)
+        elif opcion == 'dn':
+            return ImageFont.truetype(self.__ruta_recurso('fonts/Lasvbld_.otf'),11)
+        elif opcion == 'nps':
+            return ImageFont.truetype(self.__ruta_recurso('fonts/PLAYCRDS.otf'),17)
+        else:
+            return ImageFont.truetype(self.__ruta_recurso('fonts/Minecraft.ttf'),10)
+
+
+    def genera_texto(self, int num_columnas, int num_filas, bint doble_f, opcion, texto = None):
+        ''' Función que cuadricula la imagen, calcula el color promedio de 
+            cada region y por cada una de ellas genera el texto indicado
+            del color promedio correpondiente
+
+            num_columnas: int. Ancho de la seccion
+            num_filas: int. alto de la seccion 
+            doble_f: bint. Valor que determina si se van aplicar dos filtros
+                           consecutivos
+            opcion: str. Opcion seleccionada por el usuario
+            texto: str. Texto personalizado ingresado por el usuario'''
+
+        fnt = self.selecciona_fuente(opcion)
+
+        img_letras = Image.new("RGB",(self.ancho,self.alto),(255, 255, 255))
+        l = ImageDraw.Draw(img_letras)
+
+        cdef int i,j,c
+        cdef int[:] new_rgb
+
+        c = 0
+
+        for j in range(0,self.alto,num_filas):
+            for i in range(0,self.ancho,num_columnas):
+
+                if (i + num_columnas > self.ancho) and (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,self.alto,doble_f)
+
+                elif (i + num_columnas > self.ancho):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,j+num_filas,doble_f)
+
+                elif (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,self.alto,doble_f)
+
+                else:
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,j+num_filas,doble_f)
+                
+                self.coloca_letra(l,i,j,new_rgb,c,opcion,fnt,texto)
+
+                c += 1
+                
+
+        self.img_m = np.array(img_letras)
+
+
+    def filtros_letras(self, num_columnas, num_filas, opcion, txt = None):
+        ''' Funcion que realiza la llamada correspondiente para generar texto 
+            en el canvas de acuerdo a la opcion seleccionada
+            
+            num_columnas: int. Ancho de la seccion
+            num_filas: int. alto de la seccion             
+            opcion: str. Opcion seleccionada por el usuario
+            txt: str. Texto personalizado ingresado por el usuario
+            '''
+        if opcion in ['m-cl','ds-c','tp-cl']:
+            self.genera_texto(num_columnas,num_filas,False,opcion,txt)
+
+        if opcion in ['m-g','ds-t','ds-g','dn','db','nps']:
+            self.gris(1)
+            self.genera_texto(num_columnas,num_filas,True,opcion)

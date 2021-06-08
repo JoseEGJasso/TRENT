@@ -2,12 +2,15 @@
 
 block_cipher = None
 
+added_files = [
+	("fonts", "fonts")
+]
 
-a = Analysis(['..\\..\\trent_ui.py'],
-             pathex=['.\\src\\spec\\windows\\'],
+a = Analysis(['src\\trent_ui.py'],
+             pathex=['C:\\Users\\puchi\\Desktop\\TRENT'],
              binaries=[],
-             datas=[],
-             hiddenimports=['PIL.Image', 'numpy'],
+             datas=added_files,
+             hiddenimports=['PIL.Image', 'numpy', 'PIL.ImageDraw', 'PIL.ImageFont'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],

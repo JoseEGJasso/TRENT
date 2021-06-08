@@ -33,6 +33,7 @@ menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
                         'Encontrar bordes',
                         'Sharpen',
                         'Emboss'],
+                    'Convertir a letras',
                     'Brillo',
                     'Deshacer']]]
 
@@ -45,7 +46,7 @@ layout = [
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v2.0', layout,size = (800,500),element_justification = "center",)
+window = sg.Window('TRENT v2.1', layout,size = (800,500),element_justification = "center",)
 
 img = None
 pdi = None
@@ -199,6 +200,114 @@ while True:
         if pdi != None:
             pdi.filtros_convolucion(event)
             window["ORI-IMG"].update(data = pdi.get_img('m'))
+
+    elif event == 'Convertir a letras':
+        if pdi != None:
+
+            layout_letras = [
+                [sg.Text('Selecciona una de las opciones:')],
+                [sg.Radio('Solo letra M',"R-LETRAS",key='m-cl')],
+                [sg.Radio('Solo letra M con tono gris',"R-LETRAS",key='m-g')],
+                [sg.Radio('16 letras simulando 256 tonos',"R-LETRAS",key='ds-t')],
+                [sg.Radio('16 letras simulando 256 tonos a color',"R-LETRAS",key='ds-c')],
+                [sg.Radio('16 letras con tono gris',"R-LETRAS",key='ds-g')],
+                [sg.Radio('Texto personalizado',"R-LETRAS",key='tp-cl')],
+                [sg.Radio('Fichas de domino blancas',"R-LETRAS",key='db')],
+                [sg.Radio('Fichas de domino negras',"R-LETRAS",key='dn')],
+                [sg.Radio('Fichas con naipes',"R-LETRAS",key='nps')],
+                [sg.Button('Continuar',key='ctn-letras')]
+            ]
+
+            win_letras = sg.Window('Convertir a letras',layout_letras,element_justification = 'left',keep_on_top = True,modal = True)
+
+            while True:
+                event_letras,val_letras = win_letras.read()
+
+                opciones = ['m-cl','m-g','ds-t','ds-c','ds-g','tp-cl','db','dn','nps']
+
+                if event_letras == sg.WIN_CLOSED:
+                    break
+
+                elif event_letras == 'ctn-letras':
+                    
+                    txt = None
+                    cerrar = False
+
+                    for i in range(0,len(opciones)):
+                        if win_letras[opciones[i]].get():
+
+                            if opciones[i] == 'tp-cl':
+                                layout_txt = [
+                                    [sg.Text('Ingresa el texto que deseas poner en la imagen:')],
+                                    [sg.Input(size=(60,5), key = 'input-txt')],
+                                    [sg.Button('Continuar', key = 'ctn-txt')]
+                                ]
+
+                                win_txt = sg.Window('Ingresa el texto',layout_txt,element_justification = 'left',keep_on_top = True,modal = True)
+
+                                while True:
+
+                                    event_txt,values_txt = win_txt.read()
+
+                                    cerrar = False
+
+                                    if event_txt == sg.WIN_CLOSED:
+                                        cerrar = True
+                                        break
+                                    
+                                    elif event_txt == 'ctn-txt':
+                                        txt = values_txt['input-txt']
+                                        if txt == '':
+                                            sg.popup('Ingresa un texto! >:(',title = 'Error',keep_on_top = True)
+                                            continue
+                                        break
+
+                            if cerrar:
+                                break
+
+                            if opciones[i] in ['db','dn']:
+                                info = 'Se recomienda el tamaño 12x12'
+                            elif opciones[i] == 'nps':
+                                info = 'Se recomienda el tamaño 11x13'
+                            else:
+                                info = 'Se recomienda el tamaño 8x8'
+
+                            layout_cdr = [
+                                [sg.Text(info,key='txt-recom')],
+                                [sg.Text('No. de columnas'),sg.In(size = (5,1),key = 'num_columnas')],
+                                [sg.Text('No. de filas'),sg.In(size = (5,1),key = 'num_filas')],
+                                [sg.Button('Aplicar',key = 'apl-cdr')]
+                            ]
+
+                            win_cdr = sg.Window('Tamaño cuadricula',layout_cdr,element_justification = 'center',keep_on_top = True,modal = True,size = (222,130))
+
+                            while True:
+                                event_cdr,values_cdr = win_cdr.read()
+
+                                if event_cdr == sg.WIN_CLOSED:
+                                    break
+                                elif event_cdr == 'apl-cdr':
+                                    try:
+                                        v_c = int(values_cdr['num_columnas'])
+                                        v_f = int(values_cdr['num_filas'])
+                                    except:
+                                        sg.popup('Valor ingresado no es un entero',title = 'Error',keep_on_top = True)
+                                        continue
+                                        
+                                    pdi.filtros_letras(v_c,v_f,opciones[i],txt)
+                                    window["ORI-IMG"].update(data = pdi.get_img('m'))
+
+                                    win_cdr.close()
+                                    win_letras.close()
+
+                                    if opciones[i] == 'tp-cl':
+                                        win_txt.close()
+
+                                    sg.popup_no_buttons('¡Proceso finalizado!',title = 'TRENT',auto_close = True,auto_close_duration = 3,keep_on_top = True)
+                            break
+                    
+        else:
+            sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
                 
     elif event == 'Deshacer':
 
