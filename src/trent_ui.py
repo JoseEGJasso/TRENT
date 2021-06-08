@@ -46,7 +46,7 @@ layout = [
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v2.0', layout,size = (800,500),element_justification = "center",)
+window = sg.Window('TRENT v2.1', layout,size = (800,500),element_justification = "center",)
 
 img = None
 pdi = None

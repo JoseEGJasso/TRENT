@@ -830,7 +830,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "src\\trent_procesador.pyx",
+  "src/trent_procesador.pyx",
   "stringsource",
 };
 /* MemviewSliceStruct.proto */
