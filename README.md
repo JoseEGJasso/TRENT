@@ -12,6 +12,19 @@ TRENT es un software de manipulación de imágenes como proyecto para la materia
                                         $ ./.../dist/linux-macos/TRENT    
     ```
 ## Novedades
+* ### v.2.1
+    - Se agregan los siguientes filtros de conversión de una imagen a texto:
+        - Solo letra M a color
+        - Solo letra M con tono gris
+        - 16 letras simulando 256 tonos
+        - 16 letras simulando 256 tonos a color
+        - 16 letras simulando con tono gris
+        - Texto personalizado
+        - Fichas de domino blancas
+        - Fichas de domino negras
+        - Cartas de naipes
+* ### v.2.0
+    - Optimización en los filtros al recorrer la imagen usando Cython, lo que mejora el tiempo de aplicación de los filtros considerablemente.
 * ### v.1.1
     - Se agregan los filtros inverso y alto contraste
     - Se agregan los siguientes filtros de convolucion:
@@ -22,5 +35,3 @@ TRENT es un software de manipulación de imágenes como proyecto para la materia
         - Sharpen
         - Emboss
     - Optimización en el procesamiento de la imagen utilizando arreglos de numpy
-* ### v.2.0
-    - Optimización en los filtros al recorrer la imagen usando Cython, lo que mejora el tiempo de aplicación de los filtros considerablemente.
