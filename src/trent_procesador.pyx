@@ -2,8 +2,10 @@
 import io
 import sys
 import os.path
+from os import remove
 import numpy as np
 from PIL import Image,ImageDraw,ImageFont
+from tkinter import Tk,Canvas
 
 cdef class PDI:
     ''' Clase que se encarga de la lógica de cada uno de los filtros y modificaciones'''
@@ -688,3 +690,14 @@ cdef class PDI:
         if opcion in ['m-g','ds-t','ds-g','dn','db','nps']:
             self.gris(1)
             self.genera_texto(num_columnas,num_filas,True,opcion)
+
+
+    def genera_img_texto(self, texto, estilo, int x, int y):
+        ''' '''
+        
+
+
+    def marca_de_agua(self, texto, estilo, int x, int y):
+        ''' '''
+        self.genera_img_texto(texto,estilo,x,y)
+
