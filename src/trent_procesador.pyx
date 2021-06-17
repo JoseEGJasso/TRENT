@@ -145,6 +145,11 @@ cdef class PDI:
         return self.__resize_img(aux,700,700)
 
 
+    def get_tamanio(self):
+        ''' Función que regresa el tamanio de la imagen original'''
+        return (self.ancho,self.alto)
+
+
     def guardar(self,ruta):
         ''' Función que guarda la imagen modificada en la ruta ingresada.
         
@@ -565,7 +570,6 @@ cdef class PDI:
             return 'A'
 
 
-
     def coloca_letra(self, d, int i, int j, int[:] new_rgb, int cont, opcion, fnt, texto):
         ''' Función que dibuja una letra en la posición indicada y se 
             modifica de acuerdo a la opcion seleccionada por el usuario
@@ -692,12 +696,63 @@ cdef class PDI:
             self.genera_texto(num_columnas,num_filas,True,opcion)
 
 
-    def genera_img_texto(self, texto, estilo, int x, int y):
-        ''' '''
+    def __genera_img_texto(self, texto, estilo, int x, int y):
+        ''' Funcion que crea una imagen en blanco del mismo tamanio que la original
+            con el texto personalizado en las coordenadas indicadas
+            
+            texto: str. Texto que se va a escribir en la imagen
+            estilo: tuple. Tupla con la ruta y el tamaño de la fuente
+            x: int. Coordenada x en la imagen
+            y: int. Coordenada y en la imagen'''
+
+        img_texto = Image.new("RGB",(self.ancho,self.alto),(255, 255, 255))
+        draw_texto = ImageDraw.Draw(img_texto)
+
+        ruta = estilo[0]
+        tmn = estilo[1]
+
+        fnt = ImageFont.truetype(ruta,tmn)
+
+        draw_texto.text((x,y),texto,font = fnt, fill = (0,0,0))
+
+        return img_texto
         
 
-
     def marca_de_agua(self, texto, estilo, int x, int y):
-        ''' '''
-        self.genera_img_texto(texto,estilo,x,y)
+        ''' Funcion que procesa la imagen modificada y la imagen en blanco
+            con texto para crear la marca de agua
+        
+            texto: str. Texto de la marca de agua
+            estilo: tuple. Tupla con la ruta y el tamaño de la fuente
+            x: int. Coordenada x en la imagen
+            y: int. Coordenada y en la imagen'''
+
+        img_texto = np.array(self.genera_img_texto(texto,estilo,x,y))
+
+        cdef int i, j
+        cdef int r, g, b, n_r, n_g, n_b
+        cdef double alpha = estilo[2] / 100
+
+        for i in range(0,self.ancho):
+            for j in range(0,self.alto):
+
+                r_img = self.img_m[j,i,0]
+                g_img = self.img_m[j,i,1]
+                b_img = self.img_m[j,i,2]
+
+                r_txt = img_texto[j,i,0]
+                g_txt = img_texto[j,i,1]
+                b_txt = img_texto[j,i,2]
+
+                if r_txt == 255 & g_txt == 255 & b_txt == 255:
+                    continue
+                else:
+                    n_r = int(r_img * alpha + r_txt * (1.0 - alpha))
+                    n_g = int(g_img * alpha + g_txt * (1.0 - alpha))
+                    n_b = int(b_img * alpha + b_txt * (1.0 - alpha))
+
+                    self.__modificar_rgb(j,i,(n_r,n_g,n_b))
+
+
+        
 
