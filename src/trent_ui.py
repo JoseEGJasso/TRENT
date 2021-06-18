@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import matplotlib.font_manager
+from matplotlib.font_manager import fontManager
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from trent_procesador import PDI
@@ -23,12 +23,12 @@ def guardar_imagen():
 
 def seleccionador_fuente():
 
-    dict_fonts = {}
+    dict_fonts = {}#{'hola':'mundo'}
 
-    for f in matplotlib.font_manager.fontManager.ttflist:
+    for f in fontManager.ttflist:
         dict_fonts[f.name] = f.fname
 
-    nombres = list(dict_fonts.keys())
+    nombres = list(dict_fonts.keys()) #['hola','mundo']
 
     nombres.sort()
 
