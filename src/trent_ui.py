@@ -23,12 +23,12 @@ def guardar_imagen():
 
 def seleccionador_fuente():
 
-    dict_fonts = {}#{'hola':'mundo'}
+    dict_fonts = {}
 
     for f in fontManager.ttflist:
         dict_fonts[f.name] = f.fname
 
-    nombres = list(dict_fonts.keys()) #['hola','mundo']
+    nombres = list(dict_fonts.keys())
 
     nombres.sort()
 
@@ -91,7 +91,6 @@ menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
                     'Brillo',
                     'Deshacer']]]
 
-#
 
 # Organizacion de los componentes de la interfaz
 layout = [
@@ -100,7 +99,7 @@ layout = [
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v2.1', layout,size = (800,500),element_justification = "center",)
+window = sg.Window('TRENT v2.2', layout,size = (800,500),element_justification = "center",)
 
 img = None
 pdi = None
