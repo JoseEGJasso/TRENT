@@ -727,7 +727,7 @@ cdef class PDI:
             x: int. Coordenada x en la imagen
             y: int. Coordenada y en la imagen'''
 
-        img_texto = np.array(self.genera_img_texto(texto,estilo,x,y))
+        img_texto = np.array(self.__genera_img_texto(texto,estilo,x,y))
 
         cdef int i, j
         cdef int r, g, b, n_r, n_g, n_b

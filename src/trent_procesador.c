@@ -830,7 +830,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "src/trent_procesador.pyx",
+  "src\\trent_procesador.pyx",
   "stringsource",
 };
 /* MemviewSliceStruct.proto */
@@ -2187,7 +2187,7 @@ static const char __pyx_k_dtype_is_object[] = "dtype_is_object";
 static const char __pyx_k_pyx_PickleError[] = "__pyx_PickleError";
 static const char __pyx_k_setstate_cython[] = "__setstate_cython__";
 static const char __pyx_k_Encontrar_bordes[] = "Encontrar bordes";
-static const char __pyx_k_genera_img_texto[] = "genera_img_texto";
+static const char __pyx_k_genera_img_texto[] = "__genera_img_texto";
 static const char __pyx_k_selecciona_letra[] = "__selecciona_letra";
 static const char __pyx_k_selecciona_naipe[] = "__selecciona_naipe";
 static const char __pyx_k_trent_procesador[] = "trent_procesador";
@@ -2503,7 +2503,7 @@ static PyObject *__pyx_pf_16trent_procesador_3PDI_40__ruta_recurso(CYTHON_UNUSED
 static PyObject *__pyx_pf_16trent_procesador_3PDI_42selecciona_fuente(struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self, PyObject *__pyx_v_opcion); /* proto */
 static PyObject *__pyx_pf_16trent_procesador_3PDI_44genera_texto(struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self, int __pyx_v_num_columnas, int __pyx_v_num_filas, int __pyx_v_doble_f, PyObject *__pyx_v_opcion, PyObject *__pyx_v_texto); /* proto */
 static PyObject *__pyx_pf_16trent_procesador_3PDI_46filtros_letras(struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self, PyObject *__pyx_v_num_columnas, PyObject *__pyx_v_num_filas, PyObject *__pyx_v_opcion, PyObject *__pyx_v_txt); /* proto */
-static PyObject *__pyx_pf_16trent_procesador_3PDI_48genera_img_texto(struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self, PyObject *__pyx_v_texto, PyObject *__pyx_v_estilo, int __pyx_v_x, int __pyx_v_y); /* proto */
+static PyObject *__pyx_pf_16trent_procesador_3PDI_48__genera_img_texto(struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self, PyObject *__pyx_v_texto, PyObject *__pyx_v_estilo, int __pyx_v_x, int __pyx_v_y); /* proto */
 static PyObject *__pyx_pf_16trent_procesador_3PDI_50marca_de_agua(struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self, PyObject *__pyx_v_texto, PyObject *__pyx_v_estilo, int __pyx_v_x, int __pyx_v_y); /* proto */
 static PyObject *__pyx_pf_16trent_procesador_3PDI_52__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_16trent_procesador_3PDI_54__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
@@ -16608,15 +16608,15 @@ static PyObject *__pyx_pf_16trent_procesador_3PDI_46filtros_letras(struct __pyx_
 /* "trent_procesador.pyx":699
  * 
  * 
- *     def genera_img_texto(self, texto, estilo, int x, int y):             # <<<<<<<<<<<<<<
+ *     def __genera_img_texto(self, texto, estilo, int x, int y):             # <<<<<<<<<<<<<<
  *         ''' Funcion que crea una imagen en blanco del mismo tamanio que la original
  *             con el texto personalizado en las coordenadas indicadas
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_16trent_procesador_3PDI_49genera_img_texto(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_16trent_procesador_3PDI_48genera_img_texto[] = " Funcion que crea una imagen en blanco del mismo tamanio que la original\n            con el texto personalizado en las coordenadas indicadas\n            \n            texto: str. Texto que se va a escribir en la imagen\n            estilo: tuple. Tupla con la ruta y el tama\303\261o de la fuente\n            x: int. Coordenada x en la imagen\n            y: int. Coordenada y en la imagen";
-static PyObject *__pyx_pw_16trent_procesador_3PDI_49genera_img_texto(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_16trent_procesador_3PDI_49__genera_img_texto(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_16trent_procesador_3PDI_48__genera_img_texto[] = " Funcion que crea una imagen en blanco del mismo tamanio que la original\n            con el texto personalizado en las coordenadas indicadas\n            \n            texto: str. Texto que se va a escribir en la imagen\n            estilo: tuple. Tupla con la ruta y el tama\303\261o de la fuente\n            x: int. Coordenada x en la imagen\n            y: int. Coordenada y en la imagen";
+static PyObject *__pyx_pw_16trent_procesador_3PDI_49__genera_img_texto(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_texto = 0;
   PyObject *__pyx_v_estilo = 0;
   int __pyx_v_x;
@@ -16626,7 +16626,7 @@ static PyObject *__pyx_pw_16trent_procesador_3PDI_49genera_img_texto(PyObject *_
   int __pyx_clineno = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("genera_img_texto (wrapper)", 0);
+  __Pyx_RefNannySetupContext("__genera_img_texto (wrapper)", 0);
   {
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_texto,&__pyx_n_s_estilo,&__pyx_n_s_x,&__pyx_n_s_y,0};
     PyObject* values[4] = {0,0,0,0};
@@ -16654,23 +16654,23 @@ static PyObject *__pyx_pw_16trent_procesador_3PDI_49genera_img_texto(PyObject *_
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_estilo)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("genera_img_texto", 1, 4, 4, 1); __PYX_ERR(0, 699, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__genera_img_texto", 1, 4, 4, 1); __PYX_ERR(0, 699, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_x)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("genera_img_texto", 1, 4, 4, 2); __PYX_ERR(0, 699, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__genera_img_texto", 1, 4, 4, 2); __PYX_ERR(0, 699, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_y)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("genera_img_texto", 1, 4, 4, 3); __PYX_ERR(0, 699, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("__genera_img_texto", 1, 4, 4, 3); __PYX_ERR(0, 699, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "genera_img_texto") < 0)) __PYX_ERR(0, 699, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__genera_img_texto") < 0)) __PYX_ERR(0, 699, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
       goto __pyx_L5_argtuple_error;
@@ -16687,20 +16687,20 @@ static PyObject *__pyx_pw_16trent_procesador_3PDI_49genera_img_texto(PyObject *_
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("genera_img_texto", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 699, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__genera_img_texto", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 699, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("trent_procesador.PDI.genera_img_texto", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("trent_procesador.PDI.__genera_img_texto", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_16trent_procesador_3PDI_48genera_img_texto(((struct __pyx_obj_16trent_procesador_PDI *)__pyx_v_self), __pyx_v_texto, __pyx_v_estilo, __pyx_v_x, __pyx_v_y);
+  __pyx_r = __pyx_pf_16trent_procesador_3PDI_48__genera_img_texto(((struct __pyx_obj_16trent_procesador_PDI *)__pyx_v_self), __pyx_v_texto, __pyx_v_estilo, __pyx_v_x, __pyx_v_y);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_16trent_procesador_3PDI_48genera_img_texto(struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self, PyObject *__pyx_v_texto, PyObject *__pyx_v_estilo, int __pyx_v_x, int __pyx_v_y) {
+static PyObject *__pyx_pf_16trent_procesador_3PDI_48__genera_img_texto(struct __pyx_obj_16trent_procesador_PDI *__pyx_v_self, PyObject *__pyx_v_texto, PyObject *__pyx_v_estilo, int __pyx_v_x, int __pyx_v_y) {
   PyObject *__pyx_v_img_texto = NULL;
   PyObject *__pyx_v_draw_texto = NULL;
   PyObject *__pyx_v_ruta = NULL;
@@ -16717,7 +16717,7 @@ static PyObject *__pyx_pf_16trent_procesador_3PDI_48genera_img_texto(struct __py
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("genera_img_texto", 0);
+  __Pyx_RefNannySetupContext("__genera_img_texto", 0);
 
   /* "trent_procesador.pyx":708
  *             y: int. Coordenada y en la imagen'''
@@ -16965,7 +16965,7 @@ static PyObject *__pyx_pf_16trent_procesador_3PDI_48genera_img_texto(struct __py
   /* "trent_procesador.pyx":699
  * 
  * 
- *     def genera_img_texto(self, texto, estilo, int x, int y):             # <<<<<<<<<<<<<<
+ *     def __genera_img_texto(self, texto, estilo, int x, int y):             # <<<<<<<<<<<<<<
  *         ''' Funcion que crea una imagen en blanco del mismo tamanio que la original
  *             con el texto personalizado en las coordenadas indicadas
  */
@@ -16977,7 +16977,7 @@ static PyObject *__pyx_pf_16trent_procesador_3PDI_48genera_img_texto(struct __py
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("trent_procesador.PDI.genera_img_texto", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("trent_procesador.PDI.__genera_img_texto", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_img_texto);
@@ -17129,7 +17129,7 @@ static PyObject *__pyx_pf_16trent_procesador_3PDI_50marca_de_agua(struct __pyx_o
   /* "trent_procesador.pyx":730
  *             y: int. Coordenada y en la imagen'''
  * 
- *         img_texto = np.array(self.genera_img_texto(texto,estilo,x,y))             # <<<<<<<<<<<<<<
+ *         img_texto = np.array(self.__genera_img_texto(texto,estilo,x,y))             # <<<<<<<<<<<<<<
  * 
  *         cdef int i, j
  */
@@ -30887,7 +30887,7 @@ static PyMethodDef __pyx_methods_16trent_procesador_PDI[] = {
   {"selecciona_fuente", (PyCFunction)__pyx_pw_16trent_procesador_3PDI_43selecciona_fuente, METH_O, __pyx_doc_16trent_procesador_3PDI_42selecciona_fuente},
   {"genera_texto", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_16trent_procesador_3PDI_45genera_texto, METH_VARARGS|METH_KEYWORDS, __pyx_doc_16trent_procesador_3PDI_44genera_texto},
   {"filtros_letras", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_16trent_procesador_3PDI_47filtros_letras, METH_VARARGS|METH_KEYWORDS, __pyx_doc_16trent_procesador_3PDI_46filtros_letras},
-  {"genera_img_texto", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_16trent_procesador_3PDI_49genera_img_texto, METH_VARARGS|METH_KEYWORDS, __pyx_doc_16trent_procesador_3PDI_48genera_img_texto},
+  {"__genera_img_texto", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_16trent_procesador_3PDI_49__genera_img_texto, METH_VARARGS|METH_KEYWORDS, __pyx_doc_16trent_procesador_3PDI_48__genera_img_texto},
   {"marca_de_agua", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_16trent_procesador_3PDI_51marca_de_agua, METH_VARARGS|METH_KEYWORDS, __pyx_doc_16trent_procesador_3PDI_50marca_de_agua},
   {"__reduce_cython__", (PyCFunction)__pyx_pw_16trent_procesador_3PDI_53__reduce_cython__, METH_NOARGS, 0},
   {"__setstate_cython__", (PyCFunction)__pyx_pw_16trent_procesador_3PDI_55__setstate_cython__, METH_O, 0},
