@@ -1,4 +1,5 @@
 import PySimpleGUI as sg
+from matplotlib.font_manager import fontManager
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 from trent_procesador import PDI
@@ -20,6 +21,58 @@ def guardar_imagen():
     return ruta_carpeta
 
 
+def seleccionador_fuente():
+
+    dict_fonts = {}
+
+    for f in fontManager.ttflist:
+        dict_fonts[f.name] = f.fname
+
+    nombres = list(dict_fonts.keys())
+
+    nombres.sort()
+
+    col_op = [
+        [sg.Text('Opacidad:',justification = 'left')],
+        [sg.Slider(key = 'sld-op',range = (0,100),default_value = 50,orientation = 'h',size = (16,None))]
+    ]
+
+    layout_font = [
+        [sg.Listbox(nombres,[nombres[0]],key = 'l-fonts',size = (20,10),enable_events = True,select_mode = 'LISTBOX_SELECT_MODE_SINGLE'),
+         sg.Listbox([i for i in range(6,31)],default_values = [6],key = 'sz-font',size = (4,10),select_mode = 'LISTBOX_SELECT_MODE_SINGLE', enable_events = True),
+         sg.Column(col_op,size = (None,200)) ],
+        [sg.Text('Abcd',size = (310,None),auto_size_text = False,key = 'example-txt',text_color = '#000000',background_color = 'white',justification = 'center')],
+        [sg.Button('Aplicar',key = 'apl-font')]
+    ]
+
+    win_fnt = sg.Window('Selecciona fuente de texto',layout_font,modal = True,auto_size_text = False,size = (400,360),element_justification = 'center')
+
+    while True:
+        event_fnt,values_fnt = win_fnt.read()
+
+        estilo = ""
+        font_out = None
+
+        if event_fnt in ['l-fonts','sz-font','apl-font']:
+
+            familia = values_fnt['l-fonts'][0]
+            tamanio = values_fnt['sz-font'][0]
+
+            font_ruta = dict_fonts[familia]
+
+            win_fnt['example-txt'].update(font = (familia,tamanio))
+
+            if event_fnt == 'apl-font':
+                alpha = values_fnt['sld-op']
+                font_out = (font_ruta,tamanio,alpha)
+                win_fnt.close()
+                return font_out
+
+        elif event_fnt == sg.WIN_CLOSED:
+            win_fnt.close()
+            return font_out
+
+
 # Organización de la barra de opciones
 menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
             ['Imagen',['Filtros',
@@ -34,10 +87,10 @@ menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
                         'Sharpen',
                         'Emboss'],
                     'Convertir a letras',
+                    'Marca de agua',
                     'Brillo',
                     'Deshacer']]]
 
-#
 
 # Organizacion de los componentes de la interfaz
 layout = [
@@ -46,7 +99,7 @@ layout = [
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v2.1', layout,size = (800,500),element_justification = "center",)
+window = sg.Window('TRENT v2.2', layout,size = (800,500),element_justification = "center",)
 
 img = None
 pdi = None
@@ -303,12 +356,104 @@ while True:
                                     if opciones[i] == 'tp-cl':
                                         win_txt.close()
 
-                                    sg.popup_no_buttons('¡Proceso finalizado!',title = 'TRENT',auto_close = True,auto_close_duration = 3,keep_on_top = True)
+                                    sg.popup_no_buttons('¡Proceso finalizado!',title = 'TRENT',no_titlebar = True,auto_close = True,auto_close_duration = 3,keep_on_top = True)
                             break
                     
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
+
+    elif event == 'Marca de agua':
+
+        txt_ma = ""
+        cerrar_ma = False
+
+        if pdi != None:
+            layout_ma = [
+                [sg.Text('Ingresa el texto que deseas poner de marca de agua:')],
+                [sg.Input(size=(60,5), key = 'input-ma')],
+                [sg.Button('Continuar', key = 'ctn-ma')]
+            ]
+
+            win_ma = sg.Window('Marca de agua',layout_ma,element_justification = 'left',keep_on_top = True,modal = True)
+
+            while True:
+
+                event_ma,values_ma = win_ma.read()
+
+                cerrar_ma = False
+
+                if event_ma == sg.WIN_CLOSED:
+                    cerrar_ma = True
+                    break
                 
+                elif event_ma == 'ctn-ma':
+                    txt_ma = values_ma['input-ma']
+                    if txt_ma == '':
+                        sg.popup('Ingresa un texto! >:(',title = 'Error',keep_on_top = True)
+                        continue
+                    win_ma.hide()
+                    break
+            
+            if cerrar_ma:
+                win_ma.close()
+                continue
+
+            layout_coords = [
+                [sg.Text('Selecciona las coordenadas de la imagen donde \n quieres que se genere la marca de agua:')],
+                [sg.Text('Coordenada en x'),sg.In(size = (7,1),key = 'coord-x')],
+                [sg.Text('Coordenada en y'),sg.In(size = (7,1),key = 'coord-y')],
+                [sg.Button('Continuar',key = 'ctn-ma')]
+            ]
+
+            win_coords = sg.Window('Selecciona coordenadas',layout_coords,element_justification = 'left',keep_on_top = True,modal = True,size = (315,150))
+
+            while True:
+                event_coords,values_coords = win_coords.read()
+
+                cerrar_ma = False
+
+                if event_coords == sg.WIN_CLOSED:
+                    cerrar_ma = True
+                    break
+
+                elif event_coords == 'ctn-ma':
+                    
+                    try:
+                        v_x = int(values_coords['coord-x'])
+                        v_y = int(values_coords['coord-y'])
+
+                        ancho = pdi.get_tamanio()[0]
+                        alto = pdi.get_tamanio()[1]
+
+                        if v_x <= 0 or v_x >= ancho or v_y <= 0 or v_y >= alto:
+                            sg.popup('Los valores ingresados no son validos',title = 'Error',keep_on_top = True)    
+                            continue
+
+                    except:
+                        sg.popup('Valor ingresado no es un entero',title = 'Error',keep_on_top = True)
+                        continue
+                    win_coords.hide()
+                    break
+            
+            if cerrar_ma:
+                win_coords.close()
+                continue
+
+            f = seleccionador_fuente()
+
+            if f == None:
+                sg.popup('No se ha seleccionado ninguna fuente!',title = 'Error',keep_on_top = True)
+                continue                  
+
+            pdi.marca_de_agua(txt_ma,f,v_x,v_y)
+
+            window["ORI-IMG"].update(data = pdi.get_img('m'))
+
+            sg.popup_no_buttons('¡Proceso finalizado!',title = 'TRENT',no_titlebar = True,auto_close = True,auto_close_duration = 3,keep_on_top = True)
+
+            win_ma.close()
+            win_coords.close()
+
     elif event == 'Deshacer':
 
         if pdi != None:
