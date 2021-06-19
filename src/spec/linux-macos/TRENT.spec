@@ -3,17 +3,17 @@
 block_cipher = None
 
 added_files = [
-	("fonts", "fonts")
+    ("fonts", "fonts")
 ]
 
-a = Analysis(['src/trent_ui.py'],
-             pathex=['/home/josejasso2000/Escritorio/PDI-20212/TRENT'],
+a = Analysis(['trent_ui.py'],
+             pathex=['src/'],
              binaries=[],
              datas=added_files,
              hiddenimports=['PIL.Image', 'numpy', 'PIL.ImageDraw', 'PIL.ImageFont'],
              hookspath=[],
              runtime_hooks=[],
-             excludes=[],
+             excludes=['matplotlib.backends'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
