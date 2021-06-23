@@ -1,8 +1,10 @@
 import PySimpleGUI as sg
-from matplotlib.font_manager import fontManager
+
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename,asksaveasfilename
+
 from trent_procesador import PDI
+from matplotlib.font_manager import fontManager
 
 
 def abrir_imagen():
@@ -347,6 +349,9 @@ while True:
                                         sg.popup('Valor ingresado no es un entero',title = 'Error',keep_on_top = True)
                                         continue
                                         
+                                    win_cdr.hide()
+                                    win_letras.hide()
+
                                     pdi.filtros_letras(v_c,v_f,opciones[i],txt)
                                     window["ORI-IMG"].update(data = pdi.get_img('m'))
 
@@ -443,7 +448,7 @@ while True:
 
             if f == None:
                 sg.popup('No se ha seleccionado ninguna fuente!',title = 'Error',keep_on_top = True)
-                continue                  
+                continue
 
             pdi.marca_de_agua(txt_ma,f,v_x,v_y)
 

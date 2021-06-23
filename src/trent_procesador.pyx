@@ -5,6 +5,7 @@ import os.path
 from os import remove
 import numpy as np
 from PIL import Image,ImageDraw,ImageFont
+import PySimpleGUI as sg
 from tkinter import Tk,Canvas
 
 cdef class PDI:
@@ -49,6 +50,13 @@ cdef class PDI:
         cdef int i, j
         cdef int r, g, b
 
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = (self.ancho * self.alto) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')        
+
         for i in range(0,self.ancho):
             for j in range(0,self.alto):
 
@@ -59,6 +67,27 @@ cdef class PDI:
                 new_rgb = ec(r,g,b)
 
                 self.__modificar_rgb(j,i,new_rgb)
+
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += (self.ancho * self.alto) / 20
+
+                num_pixel += 1                
+        win.close()
+
+    def __crear_barra_de_progreso(self):
+        ''' '''
+
+        total_pixeles = self.ancho * self.alto
+
+        layout_bp = [[sg.Text('Procesando...')],
+              [sg.ProgressBar(100,orientation='h',size=(20, 20),key='progress')],
+        ]
+        
+        window = sg.Window('Aplicando filtro', layout_bp).Finalize()
+
+        return window
 
 
     def deshacer_filtro(self):
@@ -186,6 +215,13 @@ cdef class PDI:
         cdef int i,j,c,f
         cdef int[:] new_rgb
 
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')
+
         for j in range(0,self.alto,num_filas):
             for i in range(0,self.ancho,num_columnas):    
 
@@ -210,6 +246,13 @@ cdef class PDI:
                         f += 1
                     c += 1
 
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+                num_pixel += 1
+        win.close()
 
     cdef int[:] __color_promedio(self, int columna_ini, int fila_ini, int columna_fin, int fila_fin, bint doble_f):
         ''' Función auxiliar que calcula el color promedio de una parte
@@ -300,6 +343,13 @@ cdef class PDI:
 
         cdef int[:] new_rgb
 
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = (self.ancho * self.alto) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')  
+
         for y in range(0,self.alto):
             for x in range(0,self.ancho):
                 
@@ -324,6 +374,14 @@ cdef class PDI:
                                     min(max(int(factor * suma_b + brillo), 0), 255)), dtype = np.intc)
 
                 self.__modificar_rgb(y,x,new_rgb)
+                
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += (self.ancho * self.alto) / 20
+
+                num_pixel += 1                
+        win.close()                     
 
 
     cdef void __aplicar_convolucion_d(self, double[:, :] filtro, double factor, double brillo):
@@ -339,6 +397,13 @@ cdef class PDI:
         cdef int img_x,img_y,f_x,f_y,r,g,b
 
         cdef int[:] new_rgb
+
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = (self.ancho * self.alto) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')        
 
         for y in range(0,self.alto):
             for x in range(0,self.ancho):
@@ -364,6 +429,14 @@ cdef class PDI:
                                     min(max(int(factor * suma_b + brillo), 0), 255)), dtype = np.intc)
 
                 self.__modificar_rgb(y,x,new_rgb)
+
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += (self.ancho * self.alto) / 20
+
+                num_pixel += 1                
+        win.close()                
 
 
     def filtros_convolucion(self,filtro):
@@ -654,6 +727,13 @@ cdef class PDI:
         cdef int i,j,c
         cdef int[:] new_rgb
 
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')
+
         c = 0
 
         for j in range(0,self.alto,num_filas):
@@ -674,8 +754,15 @@ cdef class PDI:
                 self.coloca_letra(l,i,j,new_rgb,c,opcion,fnt,texto)
 
                 c += 1
-                
 
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+                num_pixel += 1
+                
+        win.close()
         self.img_m = np.array(img_letras)
 
 
@@ -733,6 +820,13 @@ cdef class PDI:
         cdef int r, g, b, n_r, n_g, n_b
         cdef double alpha = estilo[2] / 100
 
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = (self.ancho * self.alto) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')
+
         for i in range(0,self.ancho):
             for j in range(0,self.alto):
 
@@ -744,6 +838,13 @@ cdef class PDI:
                 g_txt = img_texto[j,i,1]
                 b_txt = img_texto[j,i,2]
 
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += (self.ancho * self.alto) / 20
+
+                num_pixel += 1             
+
                 if r_txt == 255 & g_txt == 255 & b_txt == 255:
                     continue
                 else:
@@ -753,6 +854,7 @@ cdef class PDI:
 
                     self.__modificar_rgb(j,i,(n_r,n_g,n_b))
 
+        win.close()
 
         
 
