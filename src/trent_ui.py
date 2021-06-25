@@ -90,7 +90,9 @@ menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
                         'Emboss'],
                     'Convertir a letras',
                     'Marca de agua',
+                    'Convertir a imagen recursiva',['Tonos de gris','Color'],
                     'Brillo',
+                    'resize',
                     'Deshacer']]]
 
 
@@ -118,7 +120,7 @@ while True:
         ruta = abrir_imagen()
 
         if isinstance(ruta,str) and ruta != '':
-            if ruta.endswith((".png", ".jpg", ".jpeg")):
+            if ruta.lower().endswith((".png", ".jpg", ".jpeg")):
                 pdi = PDI(ruta)
                 window["ORI-IMG"].update(data = pdi.get_img('o'))
             else:
@@ -147,7 +149,7 @@ while True:
     elif event in ('Tono 1' , 'Tono 2' , 'Tono 3' , 'Tono 4' , 'Tono 5' , 'Tono 6' , 'Tono 7' , 'Tono 8' , 'Tono 9'):
 
         if pdi != None:
-            pdi.gris(int(event[-1]))
+            pdi.gris(int(event[-1]),True)
             window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
@@ -201,7 +203,7 @@ while True:
                     break
                 elif event2 == 'apl-brillo':
                     v = values2['v-brillo']
-                    pdi.modificar_brillo(v)
+                    pdi.modificar_brillo(v,True,False)
                     window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
@@ -209,7 +211,7 @@ while True:
     elif event == 'Alto contraste':
     
         if pdi != None:
-            pdi.alto_contraste()
+            pdi.alto_contraste(True)
             window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
@@ -217,7 +219,7 @@ while True:
     elif event == 'Inverso':
         
         if pdi != None:
-            pdi.inverso()
+            pdi.inverso(True)
             window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
@@ -245,7 +247,7 @@ while True:
                     n_g = int(val_rgb['v-verde'])
                     n_b = int(val_rgb['v-azul'])
 
-                    pdi.capa_rgb(n_r,n_g,n_b)
+                    pdi.capa_rgb(n_r,n_g,n_b,True,True)
                     window["ORI-IMG"].update(data = pdi.get_img('m'))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
@@ -458,6 +460,21 @@ while True:
 
             win_ma.close()
             win_coords.close()
+
+    elif event == 'Tonos de gris':
+
+        if pdi != None:
+            pdi.imgs_recursivas_gris(14, 21, 10, 10)
+
+    elif event == 'Color':
+    
+        if pdi != None:
+            pdi.imgs_recursivas_color(14, 21, 10, 10)
+
+    elif event == 'resize':
+        
+        if pdi != None:
+            pdi.resize(14, 21)
 
     elif event == 'Deshacer':
 

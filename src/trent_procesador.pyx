@@ -2,10 +2,10 @@
 import io
 import sys
 import os.path
-from os import remove
 import numpy as np
-from PIL import Image,ImageDraw,ImageFont
 import PySimpleGUI as sg
+from shutil import rmtree
+from PIL import Image,ImageDraw,ImageFont
 from tkinter import Tk,Canvas
 
 cdef class PDI:
@@ -41,40 +41,55 @@ cdef class PDI:
             self.img_m[x,y,z] = rgb[z]
 
 
-    def __modificar_pixeles(self,ec):
+    def __modificar_pixeles(self, ec, pb, img):
         ''' Función que aplica la función recibida a los valores RGB del pixel y
             los nuevos valores generados por esta función se aplican al pixel
 
-            ec. function. Función a aplicar'''
+            ec. function. Función a aplicar
+            br. boolean. Valor que indica si crear o no una barra de progreso'''
 
         cdef int i, j
         cdef int r, g, b
+        cdef int ancho_m = np.size(self.img_m,axis = 1)
+        cdef int alto_m = np.size(self.img_m,axis = 0)
 
+        # Variables de la barra de progreso. Inicio
         cdef int pb_value = 5
         cdef int num_pixel = 1
         cdef double pb_progress = (self.ancho * self.alto) / 20
 
-        win = self.__crear_barra_de_progreso()
-        pb = win.FindElement('progress')        
+        if pb:
+            win = self.__crear_barra_de_progreso()
+            pb = win.FindElement('progress')
+        # Variables de la barra de progreso. Fin
 
-        for i in range(0,self.ancho):
-            for j in range(0,self.alto):
+        for i in range(0,ancho_m):
+            for j in range(0,alto_m):
 
-                r = self.img_o[j,i,0]
-                g = self.img_o[j,i,1]
-                b = self.img_o[j,i,2]
+                if img:
+                    r = self.img_o[j,i,0]
+                    g = self.img_o[j,i,1]
+                    b = self.img_o[j,i,2]
+                else:
+                    r = self.img_m[j,i,0]
+                    g = self.img_m[j,i,1]
+                    b = self.img_m[j,i,2]
 
                 new_rgb = ec(r,g,b)
 
                 self.__modificar_rgb(j,i,new_rgb)
 
+            if pb:
+                # Avance barra de progreso. Inicio
                 if num_pixel == int(pb_progress):
                     pb.update(pb_value)
                     pb_value += 5
                     pb_progress += (self.ancho * self.alto) / 20
 
-                num_pixel += 1                
-        win.close()
+                num_pixel += 1
+                # Avance barra de progreso. Fin              
+        if pb:
+            win.close()
 
     def __crear_barra_de_progreso(self):
         ''' '''
@@ -96,34 +111,34 @@ cdef class PDI:
         self.img_m = self.img_o.copy()
 
 
-    def gris(self,char tono):
+    def gris(self, char tono, bint br):
         ''' Función que aplica el filtro gris seleccionado a la imagen
 
             tono: str. Tono de gris seleccionado para aplicar'''
 
         if tono == 1:
-            self.__modificar_pixeles(lambda r, g, b : tuple([(r + g + b) // 3]*3))
+            self.__modificar_pixeles(lambda r, g, b : tuple([(r + g + b) // 3]*3),br,True)
         elif tono == 2:
-            self.__modificar_pixeles(lambda r, g, b : tuple([int(r*0.3 + g*0.59 + b*0.11)]*3))
+            self.__modificar_pixeles(lambda r, g, b : tuple([int(r*0.3 + g*0.59 + b*0.11)]*3),br,True)
         elif tono == 3:
-            self.__modificar_pixeles(lambda r, g, b : tuple([int(r*0.2126 + g*0.7152 + b*0.0722)]*3))
+            self.__modificar_pixeles(lambda r, g, b : tuple([int(r*0.2126 + g*0.7152 + b*0.0722)]*3),br,True)
         elif tono == 4:
-            self.__modificar_pixeles(lambda r, g, b : tuple([(max(r,g,b) + min(r,g,b)) // 2]*3))
+            self.__modificar_pixeles(lambda r, g, b : tuple([(max(r,g,b) + min(r,g,b)) // 2]*3),br,True)
         elif tono == 5:
-            self.__modificar_pixeles(lambda r, g, b : tuple([max(r,g,b)]*3))
+            self.__modificar_pixeles(lambda r, g, b : tuple([max(r,g,b)]*3),br,True)
         elif tono == 6:
-            self.__modificar_pixeles(lambda r, g, b : tuple([min(r,g,b)]*3))
+            self.__modificar_pixeles(lambda r, g, b : tuple([min(r,g,b)]*3),br,True)
         elif tono == 7:
-            self.__modificar_pixeles(lambda r, g, b : tuple([r]*3))
+            self.__modificar_pixeles(lambda r, g, b : tuple([r]*3),br,True)
         elif tono == 8:
-            self.__modificar_pixeles(lambda r, g, b : tuple([g]*3))
+            self.__modificar_pixeles(lambda r, g, b : tuple([g]*3),br,True)
         elif tono == 9:
-            self.__modificar_pixeles(lambda r, g, b : tuple([b]*3))
+            self.__modificar_pixeles(lambda r, g, b : tuple([b]*3),br,True)
         else:
             raise ValueError("Ese tono de gris no existe!")
 
 
-    def modificar_brillo(self, int cons):
+    def modificar_brillo(self, int cons, bint br, bint img):
         ''' Función que modifica el brillo de la imagen de acuerdo a la constante recibida
 
             cons: int. Constante a sumar para modificar el brillo'''
@@ -132,7 +147,7 @@ cdef class PDI:
                                 min(max(int(g+cons), 0), 255),
                                 min(max(int(b+cons), 0), 255))
 
-        self.__modificar_pixeles(func)
+        self.__modificar_pixeles(func,br,img)
 
 
     def __resize_img(self,aux,alto_nuevo,ancho_nuevo):
@@ -215,12 +230,14 @@ cdef class PDI:
         cdef int i,j,c,f
         cdef int[:] new_rgb
 
+        # Variables de la barra de progreso. Inicio
         cdef int pb_value = 5
         cdef int num_pixel = 1
         cdef double pb_progress = ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
 
         win = self.__crear_barra_de_progreso()
         pb = win.FindElement('progress')
+        # Variables de la barra de progreso. Fin
 
         for j in range(0,self.alto,num_filas):
             for i in range(0,self.ancho,num_columnas):    
@@ -246,12 +263,15 @@ cdef class PDI:
                         f += 1
                     c += 1
 
+                # Avance barra de progreso. Inicio
                 if num_pixel == int(pb_progress):
                     pb.update(pb_value)
                     pb_value += 5
                     pb_progress += ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
 
                 num_pixel += 1
+                # Avance barra de progreso. Fin
+
         win.close()
 
     cdef int[:] __color_promedio(self, int columna_ini, int fila_ini, int columna_fin, int fila_fin, bint doble_f):
@@ -296,27 +316,27 @@ cdef class PDI:
         return prom
 
 
-    def alto_contraste(self):
+    def alto_contraste(self, bint br):
         ''' Función que aplica el filtro de alto contraste a la imagen original'''
 
         self.gris(1)
 
         func = lambda r, g, b: (255,255,255) if r > 127 and g > 127 and b > 127 else (0,0,0)
 
-        self.__modificar_pixeles(func)
+        self.__modificar_pixeles(func,br,True)
 
     
-    def inverso(self):
+    def inverso(self, bint br):
         ''' Función que aplica el filtro inverso a la imagen original'''
 
         self.gris(1)
 
         func = lambda r, g, b: (0,0,0) if r > 127 and g > 127 and b > 127 else (255,255,255)
 
-        self.__modificar_pixeles(func)
+        self.__modificar_pixeles(func,br,True)
 
 
-    def capa_rgb(self, int new_r, int new_g, int new_b):
+    def capa_rgb(self, int new_r, int new_g, int new_b, bint br, bint img):
         ''' Función que aplica la capa RGB con los valores recibidos a 
         la imagen original
         
@@ -326,7 +346,7 @@ cdef class PDI:
         
         func = lambda r, g, b: (new_r & r,new_g & g,new_b & b)
 
-        self.__modificar_pixeles(func)
+        self.__modificar_pixeles(func,br,img)
 
 
     cdef void __aplicar_convolucion(self, int[:, :] filtro, double factor, double brillo):
@@ -343,12 +363,14 @@ cdef class PDI:
 
         cdef int[:] new_rgb
 
+        # Variables de la barra de progreso. Inicio
         cdef int pb_value = 5
         cdef int num_pixel = 1
         cdef double pb_progress = (self.ancho * self.alto) / 20
 
         win = self.__crear_barra_de_progreso()
         pb = win.FindElement('progress')  
+        # Variables de la barra de progreso. Fin        
 
         for y in range(0,self.alto):
             for x in range(0,self.ancho):
@@ -375,12 +397,15 @@ cdef class PDI:
 
                 self.__modificar_rgb(y,x,new_rgb)
                 
+                # Avance barra de progreso. Inicio
                 if num_pixel == int(pb_progress):
                     pb.update(pb_value)
                     pb_value += 5
                     pb_progress += (self.ancho * self.alto) / 20
 
                 num_pixel += 1                
+                # Avance barra de progreso. Fin
+
         win.close()                     
 
 
@@ -398,12 +423,14 @@ cdef class PDI:
 
         cdef int[:] new_rgb
 
+        # Variables de la barra de progreso. Inicio
         cdef int pb_value = 5
         cdef int num_pixel = 1
         cdef double pb_progress = (self.ancho * self.alto) / 20
 
         win = self.__crear_barra_de_progreso()
         pb = win.FindElement('progress')        
+        # Variables de la barra de progreso. Fin
 
         for y in range(0,self.alto):
             for x in range(0,self.ancho):
@@ -430,12 +457,15 @@ cdef class PDI:
 
                 self.__modificar_rgb(y,x,new_rgb)
 
+                # Avance barra de progreso. Inicio
                 if num_pixel == int(pb_progress):
                     pb.update(pb_value)
                     pb_value += 5
                     pb_progress += (self.ancho * self.alto) / 20
 
                 num_pixel += 1                
+                # Avance barra de progreso. Fin
+
         win.close()                
 
 
@@ -727,9 +757,11 @@ cdef class PDI:
         cdef int i,j,c
         cdef int[:] new_rgb
 
+        # Variables de la barra de progreso. Inicio
         cdef int pb_value = 5
         cdef int num_pixel = 1
         cdef double pb_progress = ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+        # Variables de la barra de progreso. Fin
 
         win = self.__crear_barra_de_progreso()
         pb = win.FindElement('progress')
@@ -755,12 +787,14 @@ cdef class PDI:
 
                 c += 1
 
+                # Avance barra de progreso. Inicio
                 if num_pixel == int(pb_progress):
                     pb.update(pb_value)
                     pb_value += 5
                     pb_progress += ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
 
                 num_pixel += 1
+                # Avance barra de progreso. Fin
                 
         win.close()
         self.img_m = np.array(img_letras)
@@ -820,9 +854,11 @@ cdef class PDI:
         cdef int r, g, b, n_r, n_g, n_b
         cdef double alpha = estilo[2] / 100
 
+        # Variables de la barra de progreso. Inicio
         cdef int pb_value = 5
         cdef int num_pixel = 1
         cdef double pb_progress = (self.ancho * self.alto) / 20
+        # Variables de la barra de progreso. Fin
 
         win = self.__crear_barra_de_progreso()
         pb = win.FindElement('progress')
@@ -838,12 +874,14 @@ cdef class PDI:
                 g_txt = img_texto[j,i,1]
                 b_txt = img_texto[j,i,2]
 
+                # Avance barra de progreso. Inicio
                 if num_pixel == int(pb_progress):
                     pb.update(pb_value)
                     pb_value += 5
                     pb_progress += (self.ancho * self.alto) / 20
 
-                num_pixel += 1             
+                num_pixel += 1
+                # Avance barra de progreso. Fin
 
                 if r_txt == 255 & g_txt == 255 & b_txt == 255:
                     continue
@@ -856,5 +894,134 @@ cdef class PDI:
 
         win.close()
 
+
+    def selecciona_imagen(self, tono):
+        pass
+
+
+    def imgs_recursivas_gris(self, int ancho, int alto, int num_columnas, int num_filas):
+
+        try:
+            rmtree("./out/gris")
+            os.makedirs("./out/gris",exist_ok=True)
+        except:
+            os.makedirs("./out/gris",exist_ok=True)
+            pass
+
+        cdef int i,j
+        cdef int[:] new_rgb
+        cdef int brillo = -180
+
+        # Variables de la barra de progreso. Inicio
+        cdef int pb_value = 5
+        cdef double pb_progress = 1.5
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')
+        # Variables de la barra de progreso. Fin        
+
+        img_recursiva = Image.fromarray(np.array(self.img_m),'RGB').resize((ancho,alto),Image.ANTIALIAS)
+
+        self.img_m = np.array(img_recursiva)
+
+        for i in range(30):
+            self.modificar_brillo(brillo,False,False)
+            img_pil = Image.fromarray(np.array(self.img_m),'RGB')
+
+            if self.img_formato == None:
+                img_pil.save('out/gris/' + str(i+1) + '.' + 'PNG',quality = 95)
+            else:
+                img_pil.save('out/gris/' + str(i+1) + '.' + self.img_formato,quality = 95)
+
+            brillo += 12
+
+            self.img_m = np.array(img_recursiva)
+
+            # Avance barra de progreso. Inicio
+            if i == int(pb_progress):
+                pb.update(pb_value)
+                pb_value += 5
+                pb_progress += 1.5
+            # Avance barra de progreso. Fin
+
+        self.deshacer_filtro()
+        win.close()
+
         
+    def __rgb_to_hex(self, rgb):
+        return '%02x%02x%02x' % rgb
+
+
+    def imgs_recursivas_color(self, int ancho, int alto, int num_columnas, int num_filas):
+
+        try:
+            rmtree("./out/color")
+            os.makedirs("./out/color",exist_ok=True)
+        except:
+            os.makedirs("./out/color",exist_ok=True)
+            pass
+
+        cdef int i,j,r,g,b
+        cdef int[:] new_rgb
+
+        cache = []
+
+        # Variables de la barra de progreso. Inicio
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')
+        # Variables de la barra de progreso. Fin
+
+        img_recursiva = Image.fromarray(np.array(self.img_m)).resize((ancho,alto),Image.ANTIALIAS)
+
+        self.img_m = np.array(img_recursiva)        
+
+        for j in range(0,self.alto,num_filas):
+            for i in range(0,self.ancho,num_columnas):    
+
+                if (i + num_columnas > self.ancho) and (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,self.alto,False)
+
+                elif (i + num_columnas > self.ancho):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,j+num_filas,False)
+
+                elif (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,self.alto,False)
+
+                else:
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,j+num_filas,False)
+
+                r = new_rgb[0]
+                g = new_rgb[1]
+                b = new_rgb[2]
+
+                self.capa_rgb(r,g,b,False,False)
+
+                img_pil = Image.fromarray(np.array(self.img_m),'RGB')
+
+                nombre = self.__rgb_to_hex(tuple(new_rgb))
+
+                if nombre not in cache:
+                    if self.img_formato == None:
+                        img_pil.save('out/color/' + nombre + '.' + 'PNG',quality=95)
+                    else:
+                        img_pil.save('out/color/' + nombre + '.' + self.img_formato,quality=95)
+
+                    cache.append(nombre)
+
+                # Avance barra de progreso. Inicio
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+                num_pixel += 1
+                # Avance barra de progreso. Fin
+
+                self.img_m = np.array(img_recursiva)
+
+        win.close()
 
