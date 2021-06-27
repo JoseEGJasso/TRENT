@@ -92,18 +92,19 @@ menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
                     'Marca de agua',
                     'Convertir a imagen recursiva',['Tonos de gris','Color'],
                     'Brillo',
-                    'resize',
                     'Deshacer']]]
 
 
 # Organizacion de los componentes de la interfaz
 layout = [
     [sg.Menu(menu_def)],
-    [sg.Image(key='ORI-IMG')]
+    [sg.Image(key='ORI-IMG',size = (700,400))],
+    #[sg.Text('Tamaño: 2348x1093',size = (800,1),justification = 'center')],
+    #[sg.Button('Ver imagen',size = (None,1))]
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v2.2', layout,size = (800,500),element_justification = "center",)
+window = sg.Window('TRENT v2.2',layout,size = (800,500),element_justification = "center",auto_size_text = False)
 
 img = None
 pdi = None
@@ -464,17 +465,14 @@ while True:
     elif event == 'Tonos de gris':
 
         if pdi != None:
-            pdi.imgs_recursivas_gris(14, 21, 10, 10)
+            pdi.aplica_img_recursiva(True,14, 21, 10, 10)
+            window["ORI-IMG"].update(data = pdi.get_img('m'))
 
     elif event == 'Color':
     
         if pdi != None:
-            pdi.imgs_recursivas_color(14, 21, 10, 10)
-
-    elif event == 'resize':
-        
-        if pdi != None:
-            pdi.resize(14, 21)
+            pdi.aplica_img_recursiva(False,14, 21, 10, 10)
+            window["ORI-IMG"].update(data = pdi.get_img('m'))
 
     elif event == 'Deshacer':
 
