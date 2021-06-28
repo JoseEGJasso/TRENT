@@ -341,7 +341,7 @@ cdef class PDI:
 
             br: bint. Valor que indica si crear o no una barra de progreso'''
 
-        self.gris(1)
+        self.gris(1,False)
 
         func = lambda r, g, b: (255,255,255) if r > 127 and g > 127 and b > 127 else (0,0,0)
 
@@ -353,7 +353,7 @@ cdef class PDI:
 
             br: bint. Valor que indica si crear o no una barra de progreso'''
 
-        self.gris(1)
+        self.gris(1,False)
 
         func = lambda r, g, b: (0,0,0) if r > 127 and g > 127 and b > 127 else (255,255,255)
 
@@ -840,7 +840,7 @@ cdef class PDI:
             self.genera_texto(num_columnas,num_filas,False,opcion,txt)
 
         if opcion in ['m-g','ds-t','ds-g','dn','db','nps']:
-            self.gris(1)
+            self.gris(1,False)
             self.genera_texto(num_columnas,num_filas,True,opcion)
 
 

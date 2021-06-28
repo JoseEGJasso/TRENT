@@ -104,7 +104,7 @@ layout = [
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v2.2',layout,size = (800,500),element_justification = "center",auto_size_text = False)
+window = sg.Window('TRENT v2.3',layout,size = (800,500),element_justification = "center",auto_size_text = False)
 
 img = None
 pdi = None
@@ -172,6 +172,7 @@ while True:
 
                 if event3 == sg.WIN_CLOSED:
                     break
+
                 elif event3 == 'apl-mosaico':
                     
                     try:
@@ -181,8 +182,11 @@ while True:
                         sg.popup('Valor ingresado no es un entero',title = 'Error',keep_on_top = True)
                         continue
 
+                    win_mosaico.hide()
                     pdi.mosaico(v_c,v_f)
                     window["ORI-IMG"].update(data = pdi.get_img('m',True))
+                    win_mosaico.close()
+
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
         
@@ -204,8 +208,10 @@ while True:
                     break
                 elif event2 == 'apl-brillo':
                     v = values2['v-brillo']
+                    win_brillo.hide()
                     pdi.modificar_brillo(v,True,False)
-                    window["ORI-IMG"].update(data = pdi.get_img('m',True))
+                    window["ORI-IMG"].update(data = pdi.get_img('m',True))                    
+                    win_brillo.close()
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
 
@@ -243,13 +249,16 @@ while True:
 
                 if event_rgb == sg.WIN_CLOSED:
                     break
+
                 elif event_rgb == 'apl-rgb':
                     n_r = int(val_rgb['v-rojo'])
                     n_g = int(val_rgb['v-verde'])
                     n_b = int(val_rgb['v-azul'])
 
+                    win_rgb.hide()
                     pdi.capa_rgb(n_r,n_g,n_b,True,True)
                     window["ORI-IMG"].update(data = pdi.get_img('m',True))
+                    win_rgb.close()
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
 
@@ -363,8 +372,6 @@ while True:
 
                                     if opciones[i] == 'tp-cl':
                                         win_txt.close()
-
-                                    sg.popup_no_buttons('¡Proceso finalizado!',title = 'TRENT',no_titlebar = True,auto_close = True,auto_close_duration = 3,keep_on_top = True)
                             break
                     
         else:
@@ -456,8 +463,6 @@ while True:
             pdi.marca_de_agua(txt_ma,f,v_x,v_y)
 
             window["ORI-IMG"].update(data = pdi.get_img('m',False))
-
-            sg.popup_no_buttons('¡Proceso finalizado!',title = 'TRENT',no_titlebar = True,auto_close = True,auto_close_duration = 3,keep_on_top = True)
 
             win_ma.close()
             win_coords.close()
