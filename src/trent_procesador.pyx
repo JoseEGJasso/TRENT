@@ -71,8 +71,8 @@ cdef class PDI:
 
         cdef int i, j
         cdef int r, g, b
-        cdef int ancho_m = np.size(self.img_m,axis = 1)
-        cdef int alto_m = np.size(self.img_m,axis = 0)
+        cdef int ancho_m = np.size(self.img_o,axis = 1) if img else np.size(self.img_m,axis = 1)
+        cdef int alto_m = np.size(self.img_o,axis = 0) if img else np.size(self.img_m,axis = 0)
 
         # Variables de la barra de progreso. Inicio
         cdef int pb_value = 5
@@ -184,20 +184,28 @@ cdef class PDI:
         return bio.getvalue()
 
 
-    def get_img(self,tipo_img):
+    def get_img(self, tipo_img, deshacer = True):
         ''' Función que regresa la imagen original o modificada con tamanio modificado.
+            El parametro deshacer indica si hay que eliminar el filtro despues de
+            regresar la imagen
 
             Si recibe 'o' regresa la imagen original.
             Si recibe 'm' regresa la imagen modificada.
             
-            tipo_img: char. Imagen que se requiere regresar'''
+            tipo_img: char. Imagen que se requiere regresar
+            deshacer: boolean. Valor que indica si hay que deshacer el filtro'''
 
         if tipo_img == 'o':
             aux = Image.fromarray(np.array(self.img_o))
         elif tipo_img == 'm':
             aux = Image.fromarray(np.array(self.img_m))
 
-        return self.__resize_img(aux,700,700)
+        rsz = self.__resize_img(aux,700,700)
+        
+        if deshacer:
+            self.deshacer_filtro()
+
+        return rsz
 
 
     def get_tamanio(self):
@@ -827,6 +835,7 @@ cdef class PDI:
             opcion: str. Opcion seleccionada por el usuario
             txt: str. Texto personalizado ingresado por el usuario
             '''
+        
         if opcion in ['m-cl','ds-c','tp-cl']:
             self.genera_texto(num_columnas,num_filas,False,opcion,txt)
 
@@ -938,6 +947,8 @@ cdef class PDI:
         win = self.__crear_barra_de_progreso()
         pb = win.FindElement('progress')
         # Variables de la barra de progreso. Fin        
+
+        self.gris(1,False)
 
         img_recursiva = Image.fromarray(np.array(self.img_m),'RGB').resize((ancho,alto),Image.ANTIALIAS)
 
@@ -1177,7 +1188,7 @@ cdef class PDI:
             num_filas: int. Alto de la cuadricula'''
 
         if tipo_filtro:
-            self.imgs_recursivas_gris(ancho,alto,num_columnas,num_filas)
+            self.imgs_recursivas_gris(ancho,alto)
             self.dibuja_imgs_gris(ancho,alto,num_columnas,num_filas)
         else:
             self.imgs_recursivas_color(ancho,alto,num_columnas,num_filas)

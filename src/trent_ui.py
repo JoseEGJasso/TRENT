@@ -151,7 +151,7 @@ while True:
 
         if pdi != None:
             pdi.gris(int(event[-1]),True)
-            window["ORI-IMG"].update(data = pdi.get_img('m'))
+            window["ORI-IMG"].update(data = pdi.get_img('m',True))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
 
@@ -182,7 +182,7 @@ while True:
                         continue
 
                     pdi.mosaico(v_c,v_f)
-                    window["ORI-IMG"].update(data = pdi.get_img('m'))
+                    window["ORI-IMG"].update(data = pdi.get_img('m',True))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
         
@@ -205,7 +205,7 @@ while True:
                 elif event2 == 'apl-brillo':
                     v = values2['v-brillo']
                     pdi.modificar_brillo(v,True,False)
-                    window["ORI-IMG"].update(data = pdi.get_img('m'))
+                    window["ORI-IMG"].update(data = pdi.get_img('m',True))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
 
@@ -213,7 +213,7 @@ while True:
     
         if pdi != None:
             pdi.alto_contraste(True)
-            window["ORI-IMG"].update(data = pdi.get_img('m'))
+            window["ORI-IMG"].update(data = pdi.get_img('m',True))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
 
@@ -221,7 +221,7 @@ while True:
         
         if pdi != None:
             pdi.inverso(True)
-            window["ORI-IMG"].update(data = pdi.get_img('m'))
+            window["ORI-IMG"].update(data = pdi.get_img('m',True))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
 
@@ -249,7 +249,7 @@ while True:
                     n_b = int(val_rgb['v-azul'])
 
                     pdi.capa_rgb(n_r,n_g,n_b,True,True)
-                    window["ORI-IMG"].update(data = pdi.get_img('m'))
+                    window["ORI-IMG"].update(data = pdi.get_img('m',True))
         else:
             sg.popup('No se ha abierto ninguna imagen',title = 'Error',keep_on_top = True)
 
@@ -257,7 +257,7 @@ while True:
         
         if pdi != None:
             pdi.filtros_convolucion(event)
-            window["ORI-IMG"].update(data = pdi.get_img('m'))
+            window["ORI-IMG"].update(data = pdi.get_img('m',True))
 
     elif event == 'Convertir a letras':
         if pdi != None:
@@ -356,7 +356,7 @@ while True:
                                     win_letras.hide()
 
                                     pdi.filtros_letras(v_c,v_f,opciones[i],txt)
-                                    window["ORI-IMG"].update(data = pdi.get_img('m'))
+                                    window["ORI-IMG"].update(data = pdi.get_img('m',True))
 
                                     win_cdr.close()
                                     win_letras.close()
@@ -455,24 +455,86 @@ while True:
 
             pdi.marca_de_agua(txt_ma,f,v_x,v_y)
 
-            window["ORI-IMG"].update(data = pdi.get_img('m'))
+            window["ORI-IMG"].update(data = pdi.get_img('m',False))
 
             sg.popup_no_buttons('¡Proceso finalizado!',title = 'TRENT',no_titlebar = True,auto_close = True,auto_close_duration = 3,keep_on_top = True)
 
             win_ma.close()
             win_coords.close()
 
-    elif event == 'Tonos de gris':
+    elif event in ['Tonos de gris','Color']:
+
+        img_ancho,img_alto = pdi.get_tamanio()
+
+        ancho_default = 10 if (img_ancho / 500) < 1 else int((img_ancho / 500) * 10)
+        alto_default = 10 if (img_ancho / 500) < 1 else int((img_alto / 500) * 10)
+
+        col_default = 10 if (img_ancho / 500) < 1 else int((img_ancho / 500) * 10)
+        fil_default = 10 if (img_alto / 500) < 1 else int((img_alto / 500) * 10)
+
+        no_aplicar = False
 
         if pdi != None:
-            pdi.aplica_img_recursiva(True,14, 21, 10, 10)
-            window["ORI-IMG"].update(data = pdi.get_img('m'))
+            columna_tmn = [
+                [sg.Text('Tamaño imagen recursiva',justification = 'center')],
+                [sg.Text('Ancho:'),sg.In(str(ancho_default),size = (5,1),key = 'ancho_img_rcsv')],
+                [sg.Text('Alto:   '),sg.In(str(alto_default),size = (5,1),key = 'alto_img_rcsv')]
+            ]
 
-    elif event == 'Color':
-    
-        if pdi != None:
-            pdi.aplica_img_recursiva(False,14, 21, 10, 10)
-            window["ORI-IMG"].update(data = pdi.get_img('m'))
+            columna_cuad = [
+                [sg.Text('Tamaño de la cuadricula',justification = 'center')],
+                [sg.Text('No. de columnas:'),sg.In(str(col_default),size = (5,1),key = 'num_columnas')],
+                [sg.Text('No. de filas:        '),sg.In(str(fil_default),size = (5,1),key = 'num_filas')]
+            ]
+
+            layout_rcsv = [
+                [sg.Text('Se calcularon los valores recomendados')],
+                [sg.Column(columna_tmn,size = (180,100),element_justification = 'center',vertical_alignment = 'center'),sg.VSeparator('black'),
+                sg.Column(columna_cuad,size = (180,100),element_justification = 'center',vertical_alignment = 'center')],
+                [sg.Button('Aplicar',key = 'apl-rcsv',pad = ((1,1),(1,1)))]
+            ]
+
+            win_rcsv = sg.Window('Selecciona tamaño',layout_rcsv,size = (410,185),modal = True,element_justification = 'center')
+
+            while True:
+                event_rcsv,values_rcsv = win_rcsv.read()
+
+                if event_rcsv == sg.WIN_CLOSED:
+                    no_aplicar = True
+                    break            
+
+                elif event_rcsv == 'apl-rcsv':
+                    try:
+                        v_ancho = int(values_rcsv['ancho_img_rcsv'])
+                        v_alto = int(values_rcsv['alto_img_rcsv'])
+                        v_c = int(values_rcsv['num_columnas'])
+                        v_f = int(values_rcsv['num_filas'])
+
+                        ancho = pdi.get_tamanio()[0]
+                        alto = pdi.get_tamanio()[1]
+
+                        if v_c <= 0 or v_c >= ancho or v_f <= 0 or v_f >= alto:
+                            sg.popup('Los valores ingresados no son validos',title = 'Error',keep_on_top = True)    
+                            continue
+                    except:
+                        sg.popup('Valor ingresado no es un entero',title = 'Error',keep_on_top = True)
+                        continue
+
+                    win_rcsv.hide()
+                    break
+
+            if no_aplicar:
+                win_rcsv.close()
+                continue
+
+            if event == 'Tonos de gris':
+                pdi.aplica_img_recursiva(True, v_ancho, v_alto, v_c, v_f)
+            else:
+                pdi.aplica_img_recursiva(False, v_ancho, v_alto, v_c, v_f)
+
+            window["ORI-IMG"].update(data = pdi.get_img('m',True))
+
+            win_rcsv.close()
 
     elif event == 'Deshacer':
 
