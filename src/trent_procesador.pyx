@@ -11,11 +11,12 @@ from tkinter import Tk,Canvas
 cdef class PDI:
     ''' Clase que se encarga de la lógica de cada uno de los filtros y modificaciones'''
 
-    cdef unsigned char[:, :, :] img_o  # Imagen original transformada a arreglo
-    cdef unsigned char[:, :, :] img_m  # Imagen modificada
-    cdef int ancho                     # Número de pixeles a lo ancho de la imagen original
-    cdef int alto                      # Número de pixeles a lo alto de la imagen original
-    cdef str img_formato               # Formato de la imagen original
+    cdef unsigned char[:, :, :] img_o        # Imagen original transformada a arreglo
+    cdef unsigned char[:, :, :] img_m        # Imagen modificada
+    cdef unsigned char[:, :, :] img_m_copia  # Copia de la imagen modificada
+    cdef int ancho                           # Número de pixeles a lo ancho de la imagen original
+    cdef int alto                            # Número de pixeles a lo alto de la imagen original
+    cdef str img_formato                     # Formato de la imagen original
 
 
     def __cinit__(self, ruta):
@@ -25,7 +26,8 @@ cdef class PDI:
 
         self.img_formato = Image.open(ruta).format 
         self.img_o = np.array(Image.open(ruta))            
-        self.img_m = self.img_o.copy()             
+        self.img_m = self.img_o.copy()
+        self.img_m_copia = self.img_m.copy()
         self.ancho = np.size(self.img_o,axis = 1)  
         self.alto = np.size(self.img_o,axis = 0)  
 
@@ -202,6 +204,8 @@ cdef class PDI:
 
         rsz = self.__resize_img(aux,700,700)
         
+        self.img_m_copia = self.img_m
+
         if deshacer:
             self.deshacer_filtro()
 
@@ -221,20 +225,20 @@ cdef class PDI:
             
             ruta: str. Ruta donde se va a guardar la imagen'''
 
-        img_pil = Image.fromarray(np.array(self.img_m))
+        img_pil = Image.fromarray(np.array(self.img_m_copia))
 
         if self.img_formato == 'PNG':
             if ruta.endswith('.png'):
-                img_pil.save(ruta,format = self.img_formato)
+                img_pil.save(ruta,format = self.img_formato,quality=95)
                 return True
 
         elif self.img_formato == 'JPEG':
             if ruta.endswith((".jpg",".jpeg")):
-                img_pil.save(ruta, format = self.img_formato)
+                img_pil.save(ruta, format = self.img_formato,quality=95)
                 return True
 
         elif self.img_formato == None:
-            img_pil.save(ruta)
+            img_pil.save(ruta,quality=95)
             return True
 
         return False
@@ -944,7 +948,7 @@ cdef class PDI:
         cdef int pb_value = 5
         cdef double pb_progress = 1.5
 
-        win = self.__crear_barra_de_progreso()
+        win = self.__crear_barra_de_progreso("Creando imagenes")
         pb = win.FindElement('progress')
         # Variables de la barra de progreso. Fin        
 
@@ -1064,6 +1068,15 @@ cdef class PDI:
         cdef int pos_x = 0
         cdef int pos_y = 0
 
+        # Variables de la barra de progreso. Inicio
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')
+        # Variables de la barra de progreso. Fin
+
         for j in range(0,self.alto,num_filas):
             for i in range(0,self.ancho,num_columnas):
 
@@ -1085,12 +1098,23 @@ cdef class PDI:
                 cnv_recursiva.paste(img_gris,(pos_x,pos_y))
                 pos_x += ancho
 
+                # Avance barra de progreso. Inicio
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+                num_pixel += 1
+                # Avance barra de progreso. Fin
+
             pos_x = 0
             pos_y += alto
 
         r,g,b,a = cnv_recursiva.split()
         cnv_recursiva = Image.merge("RGB",(r,g,b))
         self.img_m = np.array(cnv_recursiva)
+        
+        win.close()
 
 
     def imgs_recursivas_color(self, int ancho, int alto, int num_columnas, int num_filas):

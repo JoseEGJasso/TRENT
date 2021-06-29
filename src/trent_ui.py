@@ -471,11 +471,11 @@ while True:
 
         img_ancho,img_alto = pdi.get_tamanio()
 
-        ancho_default = 10 if (img_ancho / 500) < 1 else int((img_ancho / 500) * 10)
-        alto_default = 10 if (img_ancho / 500) < 1 else int((img_alto / 500) * 10)
+        ancho_default = 10 if (img_ancho / 500) <= 0 else int((img_ancho / 500) * 10)
+        alto_default = 10 if (img_ancho / 500) <= 0 else int((img_alto / 500) * 10)
 
-        col_default = 10 if (img_ancho / 500) < 1 else int((img_ancho / 500) * 10)
-        fil_default = 10 if (img_alto / 500) < 1 else int((img_alto / 500) * 10)
+        col_default = 10 if (img_ancho / 800) <= 0 else int((img_ancho / 800) * 10)
+        fil_default = 10 if (img_alto / 800) <= 0 else int((img_alto / 800) * 10)
 
         no_aplicar = False
 
