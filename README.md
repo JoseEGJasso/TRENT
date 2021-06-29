@@ -16,6 +16,9 @@ TRENT es un software de manipulación de imágenes como proyecto para la materia
                                         $ ./.../dist/linux-macos/TRENT    
     ```
 ## Novedades
+* ### v.2.3
+    - Se crea un nuevo filtro que convierte la imagen en una imagen recursiva a tonos de gris y a color
+    - Se agrega una barra de progreso a cada filtro
 * ### v.2.2
     - Se crea un nuevo filtro que aplica una marca de agua personalizada en una imagen
     - Se modifica la forma de ejecutar el programa en Windows (ver detalles en la sección [Ejecución](#ejecucion))

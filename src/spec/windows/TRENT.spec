@@ -4,13 +4,13 @@ block_cipher = None
 
 
 a = Analysis(['trent_ui.py'],
-             pathex=['src\\'],
+             pathex=['src/'],
              binaries=[],
-             datas=[('..\matplotlibrc', '..\matplotlibrc'), ('fonts', 'fonts')],
+             datas=[('fonts', 'fonts')],
              hiddenimports=['PIL.Image', 'numpy', 'PIL.ImageDraw', 'PIL.ImageFont'],
              hookspath=[],
              runtime_hooks=[],
-             excludes=['matplotlib.backends'],
+             excludes=["'matplotlib.backends'"],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
