@@ -3,6 +3,7 @@ import PySimpleGUI as sg
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 
+from sys import platform
 from trent_procesador import PDI
 from matplotlib.font_manager import fontManager
 
@@ -91,6 +92,7 @@ menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
                     'Convertir a letras',
                     'Marca de agua',
                     'Convertir a imagen recursiva',['Tonos de gris','Color'],
+                    'Convertir a semitonos',['Nueve puntos','Cuatro puntos','Un punto de distintos tamaños'],
                     'Brillo',
                     'Deshacer']]]
 
@@ -105,6 +107,12 @@ layout = [
 
 # Genera la ventana
 window = sg.Window('TRENT v2.3',layout,size = (800,500),element_justification = "center",auto_size_text = False)
+
+if platform == "win32":
+    window.set_icon("./icon/logo1.ico")
+
+elif platform in ["linux","linux2"]:
+    window.set_icon("./icon/logo1.png")
 
 img = None
 pdi = None
@@ -540,6 +548,82 @@ while True:
             window["ORI-IMG"].update(data = pdi.get_img('m',True))
 
             win_rcsv.close()
+
+    elif event in ['Nueve puntos','Cuatro puntos','Un punto de distintos tamaños']:
+
+        img_ancho,img_alto = pdi.get_tamanio()
+
+        col_default = 2 if (img_ancho / 1000) <= 0 else int((img_ancho / 1000) * 10)
+        fil_default = 2 if (img_alto / 1000) <= 0 else int((img_alto / 1000) * 10)
+
+        c_default = min(col_default,fil_default)
+
+        no_aplicar = False
+
+        if pdi != None:
+            columna_tmn = [
+                [sg.Text('Tamaño imagen recursiva',justification = 'center')],
+                [sg.Text('Ancho:'),sg.In(str(12),size = (5,1),key = 'ancho_img_rcsv')],
+                [sg.Text('Alto:   '),sg.In(str(12),size = (5,1),key = 'alto_img_rcsv')]
+            ]
+
+            columna_cuad = [
+                [sg.Text('Tamaño de la cuadricula',justification = 'center')],
+                [sg.Text('No. de columnas:'),sg.In(str(c_default),size = (5,1),key = 'num_columnas')],
+                [sg.Text('No. de filas:        '),sg.In(str(c_default),size = (5,1),key = 'num_filas')]
+            ]
+
+            layout_rcsv = [
+                [sg.Text('Se calcularon los valores recomendados')],
+                [sg.Column(columna_tmn,size = (180,100),element_justification = 'center',vertical_alignment = 'center'),sg.VSeparator('black'),
+                sg.Column(columna_cuad,size = (180,100),element_justification = 'center',vertical_alignment = 'center')],
+                [sg.Button('Aplicar',key = 'apl-rcsv',pad = ((1,1),(1,1)))]
+            ]
+
+            win_rcsv = sg.Window('Selecciona tamaño',layout_rcsv,size = (410,185),modal = True,element_justification = 'center')
+
+            while True:
+                event_rcsv,values_rcsv = win_rcsv.read()
+
+                if event_rcsv == sg.WIN_CLOSED:
+                    no_aplicar = True
+                    break            
+
+                elif event_rcsv == 'apl-rcsv':
+                    try:
+                        v_ancho = int(values_rcsv['ancho_img_rcsv'])
+                        v_alto = int(values_rcsv['alto_img_rcsv'])
+                        v_c = int(values_rcsv['num_columnas'])
+                        v_f = int(values_rcsv['num_filas'])
+
+                        ancho = pdi.get_tamanio()[0]
+                        alto = pdi.get_tamanio()[1]
+
+                        if v_c <= 0 or v_c >= ancho or v_f <= 0 or v_f >= alto:
+                            sg.popup('Los valores ingresados no son validos',title = 'Error',keep_on_top = True)    
+                            continue
+                    except:
+                        sg.popup('Valor ingresado no es un entero',title = 'Error',keep_on_top = True)
+                        continue
+
+                    win_rcsv.hide()
+                    break
+
+            if no_aplicar:
+                win_rcsv.close()
+                continue
+
+            if event == 'Nueve puntos':
+                pdi.semitono(0, v_ancho, v_alto, v_c, v_f)
+            elif event == 'Cuatro puntos':
+                pdi.semitono(1, v_ancho, v_alto, v_c, v_f)
+            elif event == 'Un punto de distintos tamaños':
+                pdi.semitono(2, v_ancho, v_alto, v_c, v_f)
+
+            window["ORI-IMG"].update(data = pdi.get_img('m',True))
+
+            win_rcsv.close()        
+
 
     elif event == 'Deshacer':
 

@@ -173,7 +173,7 @@ cdef class PDI:
             '''
         w,h = aux.size
 
-        while w > 700 or h > 420:
+        while w > 720 or h > 450:
             scale = min(alto_nuevo/h, ancho_nuevo/w)
             aux = aux.resize((int(w*scale),int(h*scale)),Image.ANTIALIAS)
             alto_nuevo -= 100
@@ -1216,3 +1216,136 @@ cdef class PDI:
             self.dibuja_imgs_gris(ancho,alto,num_columnas,num_filas)
         else:
             self.imgs_recursivas_color(ancho,alto,num_columnas,num_filas)
+
+
+    def __selecciona_nueve_pts(self, int tono):
+
+        if 0 <= tono < 26:
+            return './resources/img/b9.jpg'
+        elif 26 <= tono < 52:
+            return './resources/img/b8.jpg'
+        elif 52 <= tono < 77:
+            return './resources/img/b7.jpg'
+        elif 77 <= tono < 103:
+            return './resources/img/b6.jpg'
+        elif 103 <= tono < 128:
+            return './resources/img/b5.jpg'
+        elif 128 <= tono < 154:
+            return './resources/img/b4.jpg'
+        elif 154 <= tono < 179:
+            return './resources/img/b3.jpg'
+        elif 179 <= tono < 205:
+            return './resources/img/b2.jpg'
+        elif 205 <= tono < 230:
+            return './resources/img/b1.jpg'
+        elif 230 <= tono < 256:
+            return './resources/img/b0.jpg'
+
+
+    def __selecciona_cuatro_pts(self, int tono):
+        
+        if 0 <= tono < 52:
+            return './resources/img/c4.jpg'
+        elif 52 <= tono < 103:
+            return './resources/img/c3.jpg'        
+        elif 103 <= tono < 154:
+            return './resources/img/c2.jpg'
+        elif 154 <= tono < 205:
+            return './resources/img/c1.jpg'
+        elif 205 <= tono < 256:
+            return './resources/img/c0.jpg'
+
+
+    def __selecciona_tamanio_pts(self, int tono):
+        
+        if 0 <= tono < 26:
+            return './resources/img/a1.jpg'
+        elif 26 <= tono < 52:
+            return './resources/img/a2.jpg'
+        elif 52 <= tono < 77:
+            return './resources/img/a3.jpg'
+        elif 77 <= tono < 103:
+            return './resources/img/a4.jpg'
+        elif 103 <= tono < 128:
+            return './resources/img/a5.jpg'
+        elif 128 <= tono < 154:
+            return './resources/img/a6.jpg'
+        elif 154 <= tono < 179:
+            return './resources/img/a7.jpg'
+        elif 179 <= tono < 205:
+            return './resources/img/a8.jpg'
+        elif 205 <= tono < 230:
+            return './resources/img/a9.jpg'
+        elif 230 <= tono < 256:
+            return './resources/img/a10.jpg'
+
+
+    def semitono(self, int bib, int ancho, int alto, int num_columnas, int num_filas):
+
+        cdef int i,j,r,g,b
+        cdef int[:] new_rgb
+        cdef int pos_x = 0
+        cdef int pos_y = 0
+
+        num_imgs_ancho = self.ancho // num_columnas + (1 if self.ancho % num_columnas > 0 else 0)
+        num_imgs_alto = self.alto // num_filas + (1 if self.alto % num_filas > 0 else 0)
+
+        cnv_semitono = Image.new("RGBA",(num_imgs_ancho * ancho,num_imgs_alto * alto),(255, 255, 255))        
+
+        # Variables de la barra de progreso. Inicio
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')
+        # Variables de la barra de progreso. Fin
+
+        self.gris(3,False)
+
+        for j in range(0,self.alto,num_filas):
+            for i in range(0,self.ancho,num_columnas):    
+
+                if (i + num_columnas > self.ancho) and (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,self.alto,False)
+
+                elif (i + num_columnas > self.ancho):
+                    new_rgb = self.__color_promedio(i,j,self.ancho,j+num_filas,False)
+
+                elif (j + num_filas > self.alto):
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,self.alto,False)
+
+                else:
+                    new_rgb = self.__color_promedio(i,j,i+num_columnas,j+num_filas,False)
+
+                tono = new_rgb[0]
+
+                if bib == 0:
+                    img_pto = self.__selecciona_nueve_pts(tono)
+                elif bib == 1:
+                    img_pto = self.__selecciona_cuatro_pts(tono)
+                elif bib == 2:
+                    img_pto = self.__selecciona_tamanio_pts(tono)
+
+                pto_selec = Image.open(img_pto).resize((ancho,alto),Image.ANTIALIAS)
+                cnv_semitono.paste(pto_selec.convert('RGBA'),(pos_x,pos_y))
+
+                # Avance barra de progreso. Inicio
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += ((self.ancho/num_columnas) * (self.alto/num_filas)) / 20
+
+                num_pixel += 1
+                # Avance barra de progreso. Fin
+
+                pos_x += ancho
+
+            pos_x = 0
+            pos_y += alto
+
+        n_r,n_g,n_b,a = cnv_semitono.split()
+        cnv_semitono = Image.merge("RGB",(n_r,n_g,n_b))
+        self.img_m = np.array(cnv_semitono)
+
+        win.close()        
