@@ -88,7 +88,8 @@ menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
                         'Motion Blur',
                         'Encontrar bordes',
                         'Sharpen',
-                        'Emboss'],
+                        'Emboss',
+                        'Erosion',['Maximo','Minimo']],
                     'Convertir a letras',
                     'Marca de agua',
                     'Convertir a imagen recursiva',['Tonos de gris','Color'],
@@ -106,7 +107,7 @@ layout = [
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v2.3',layout,size = (800,500),element_justification = "center",auto_size_text = False)
+window = sg.Window('TRENT v2.4',layout,size = (800,500),element_justification = "center",auto_size_text = False)
 
 if platform == "win32":
     window.set_icon("./icon/logo1.ico")
@@ -624,6 +625,15 @@ while True:
 
             win_rcsv.close()        
 
+    elif event in ['Maximo','Minimo']:
+
+        if pdi != None:
+            if event == 'Maximo':
+                pdi.erosion(True)
+            else:
+                pdi.erosion(False)
+
+            window["ORI-IMG"].update(data = pdi.get_img('m'))        
 
     elif event == 'Deshacer':
 

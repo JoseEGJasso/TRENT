@@ -1219,6 +1219,10 @@ cdef class PDI:
 
 
     def __selecciona_nueve_pts(self, int tono):
+        ''' Funcion que selecciona la imagen correspondiente de cantidad de puntos 
+            de acuerdo al tono de gris ingresado
+            
+            tono: int. Valor de tono de gris''' 
 
         if 0 <= tono < 26:
             return './resources/img/b9.jpg'
@@ -1243,7 +1247,11 @@ cdef class PDI:
 
 
     def __selecciona_cuatro_pts(self, int tono):
-        
+        ''' Funcion que selecciona la imagen correspondiente de cantidad de puntos 
+            de acuerdo al tono de gris ingresado
+            
+            tono: int. Valor de tono de gris'''    
+
         if 0 <= tono < 52:
             return './resources/img/c4.jpg'
         elif 52 <= tono < 103:
@@ -1257,6 +1265,10 @@ cdef class PDI:
 
 
     def __selecciona_tamanio_pts(self, int tono):
+        ''' Funcion que selecciona la imagen correspondiente de puntos de 
+            diferentes tamanios de acuerdo al tono de gris ingresado
+            
+            tono: int. Valor de tono de gris'''
         
         if 0 <= tono < 26:
             return './resources/img/a1.jpg'
@@ -1281,6 +1293,15 @@ cdef class PDI:
 
 
     def semitono(self, int bib, int ancho, int alto, int num_columnas, int num_filas):
+        ''' Funcion que aplica el filtro de semitono en una imagen con las dimensiones 
+            especificadas de los puntos y de la cuadricula para calcular el color
+            promedio
+
+            bib: int. Tipo de filtro de semitono
+            ancho: int. Ancho de los puntos que se van a dibujar
+            alto: int. Alto de los puntos que se van a dibujar
+            num_columnas: int. Ancho de la cuadricula
+            num_filas: int. Alto de la cuadricula'''
 
         cdef int i,j,r,g,b
         cdef int[:] new_rgb
@@ -1349,3 +1370,77 @@ cdef class PDI:
         self.img_m = np.array(cnv_semitono)
 
         win.close()        
+
+
+    cdef void __erosion(self, bint maxmin):
+        ''' Funcion que pasa a tonos de gris la imagen y aplica 
+            el filtro de erosion maximo o minimo
+
+            maxmin: bint. Valor booleano que determina si aplicar 
+                          el filtro maximo o minimo '''
+
+        self.gris(3,False)
+
+        cdef int x,y
+        cdef int img_x,img_y,f_x,f_y,tono
+
+        cdef int[:] new_rgb
+
+        # Variables de la barra de progreso. Inicio
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = (self.ancho * self.alto) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')        
+        # Variables de la barra de progreso. Fin
+
+        lista_tonos = []
+
+        for y in range(0,self.alto):
+            for x in range(0,self.ancho):
+
+                for f_y in range(0,3):
+                    for f_x in range(0,3):
+                        
+                        if f_x == 1 and f_y == 1:
+                            continue
+
+                        img_x = int((x - 3 / 2 + f_x + self.ancho) % self.ancho)
+                        img_y = int((y - 3 / 2 + f_y + self.alto) % self.alto)
+
+                        tono = self.img_o[img_y,img_x,0]
+
+                        lista_tonos.append(tono)
+
+                lista_tonos.sort()                    
+
+                if maxmin:
+                    pxl_selec = lista_tonos[0]
+                else: 
+                    pxl_selec = lista_tonos[-1]
+
+                new_rgb = np.array([pxl_selec] * 3, dtype = np.intc)
+
+                lista_tonos = []
+
+                self.__modificar_rgb(y,x,new_rgb)
+
+                # Avance barra de progreso. Inicio
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += (self.ancho * self.alto) / 20
+
+                num_pixel += 1                
+                # Avance barra de progreso. Fin
+
+        win.close()
+
+    def erosion(self,bint maxmin):
+        ''' Funcion auxiliar que realiza la llamada a la funcion principal
+
+            maxmin: bint. Valor booleano que determina si aplicar 
+                          el filtro de erosion maximo o minimo'''
+
+        self.__erosion(maxmin)
