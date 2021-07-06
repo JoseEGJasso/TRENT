@@ -9,13 +9,19 @@ TRENT es un software de manipulación de imágenes como proyecto para la materia
 - ### Windows
     Para ejecutar en Windows hay que descargar la carpeta ``` dist/windows/TRENT/``` y ejecutar el archivo ``` TRENT.exe``` dentro de esa carpeta. 
     **Importante:** El archivo ``` TRENT.exe``` solo puede ejecutarse dentro de la carpeta ``` dist/windows/TRENT/``` , si se mueve a otra parte el programa no funcionará.
-- ### Linux / MacOs
-    Para ejecutar en Linux o MacOs se debe abrir una terminal y ejecutar el archivo dentro de la carpeta ```linux-macos```, es decir:
+- ### Linux
+    Para ejecutar en Linux se debe abrir una terminal y ejecutar el archivo dentro de la carpeta ```linux```, es decir:
 
     ``` 
-                                        $ ./.../dist/linux-macos/TRENT    
+                                                $ ./.../dist/linux/TRENT    
     ```
 ## Novedades
+* ### v.2.4
+    - Se crea el filtro de semitonos con 3 tipos de imagenes distintas:
+        - Imagenes de nueve puntos
+        - Imagenes de cuatro puntos
+        - Imagenes con puntos de diferente tamaño
+    - Se crea el filtro de erosión máximo y mínimo
 * ### v.2.3
     - Se crea un nuevo filtro que convierte la imagen en una imagen recursiva a tonos de gris y a color
     - Se agrega una barra de progreso a cada filtro
