@@ -1448,6 +1448,12 @@ cdef class PDI:
 
 
     def dit_ord_disp(self, bint tipo):
+        ''' Función que aplica el dithering de tipo ordenado o disperso
+            en la imagen de acuerdo al parametro ingresado
+            
+            tipo: bint. Booleano que determina que tipo de dithering aplicar
+                        True. Dithering ordenado
+                        False. Dithering disperso'''
 
         cdef int x,y
         cdef int img_x,img_y,f_x,f_y,t,umbral
@@ -1489,18 +1495,19 @@ cdef class PDI:
                         else:
                             self.__modificar_rgb(img_y,img_x,(255,255,255))
 
-                # Avance barra de progreso. Inicio
-                if num_pixel == int(pb_progress):
-                    pb.update(pb_value)
-                    pb_value += 5
-                    pb_progress += (self.ancho * self.alto) / 20
+                        # Avance barra de progreso. Inicio
+                        if num_pixel == int(pb_progress):
+                            pb.update(pb_value)
+                            pb_value += 5
+                            pb_progress += (self.ancho * self.alto) / 20
 
-                num_pixel += 1                
-                # Avance barra de progreso. Fin
+                        num_pixel += 1                
+                        # Avance barra de progreso. Fin
         
         win.close()
 
     def dit_azar(self):
+        ''' Función que aplica dithering de tipo azaroso en la imagen'''
 
         cdef int y,x,r,t
 
@@ -1535,8 +1542,4 @@ cdef class PDI:
                 num_pixel += 1                
                 # Avance barra de progreso. Fin
 
-        win.close()                
-
-
-
-
+        win.close()
