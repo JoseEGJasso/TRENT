@@ -2,6 +2,7 @@
 import io
 import sys
 import os.path
+from random import randint
 import numpy as np
 import PySimpleGUI as sg
 from shutil import rmtree
@@ -1444,3 +1445,101 @@ cdef class PDI:
                           el filtro de erosion maximo o minimo'''
 
         self.__erosion(maxmin)
+
+
+    def dit_ord_disp(self, bint tipo):
+        ''' Función que aplica el dithering de tipo ordenado o disperso
+            en la imagen de acuerdo al parametro ingresado
+            
+            tipo: bint. Booleano que determina que tipo de dithering aplicar
+                        True. Dithering ordenado
+                        False. Dithering disperso'''
+
+        cdef int x,y
+        cdef int img_x,img_y,f_x,f_y,t,umbral
+
+        # Variables de la barra de progreso. Inicio
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = (self.ancho * self.alto) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')        
+        # Variables de la barra de progreso. Fin
+
+        self.gris(3,False)
+
+        if tipo:
+            matriz = [[8, 3, 4],
+                      [6, 1, 2],
+                      [7, 5, 9]]
+        else:
+            matriz = [[1, 7, 4],
+                      [5, 8, 3],
+                      [6, 2, 9]]
+
+        for y in range(0,self.alto,3):
+            for x in range(0,self.ancho,3):
+
+                for f_y in range(3):
+                    for f_x in range(3):
+
+                        img_x = int((x - 3 / 2 + f_x + self.ancho) % self.ancho)
+                        img_y = int((y - 3 / 2 + f_y + self.alto) % self.alto)
+
+                        t = int(self.img_o[img_y,img_x,0] / 28.3)
+                        umbral = matriz[f_y][f_x]
+
+                        if t < umbral:
+                            self.__modificar_rgb(img_y,img_x,(0,0,0))
+                        else:
+                            self.__modificar_rgb(img_y,img_x,(255,255,255))
+
+                        # Avance barra de progreso. Inicio
+                        if num_pixel == int(pb_progress):
+                            pb.update(pb_value)
+                            pb_value += 5
+                            pb_progress += (self.ancho * self.alto) / 20
+
+                        num_pixel += 1                
+                        # Avance barra de progreso. Fin
+        
+        win.close()
+
+    def dit_azar(self):
+        ''' Función que aplica dithering de tipo azaroso en la imagen'''
+
+        cdef int y,x,r,t
+
+        # Variables de la barra de progreso. Inicio
+        cdef int pb_value = 5
+        cdef int num_pixel = 1
+        cdef double pb_progress = (self.ancho * self.alto) / 20
+
+        win = self.__crear_barra_de_progreso()
+        pb = win.FindElement('progress')        
+        # Variables de la barra de progreso. Fin
+
+        self.gris(3,False)
+
+        for y in range(0,self.alto):
+            for x in range(0,self.ancho):
+
+                r = randint(0,256)
+                t = self.img_o[y,x,0]
+
+                if r > t:
+                    self.__modificar_rgb(y,x,(0,0,0))
+                else:
+                    self.__modificar_rgb(y,x,(255,255,255))
+
+                # Avance barra de progreso. Inicio
+                if num_pixel == int(pb_progress):
+                    pb.update(pb_value)
+                    pb_value += 5
+                    pb_progress += (self.ancho * self.alto) / 20
+
+                num_pixel += 1                
+                # Avance barra de progreso. Fin
+
+        win.close()
