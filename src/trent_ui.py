@@ -94,6 +94,7 @@ menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
                     'Marca de agua',
                     'Convertir a imagen recursiva',['Tonos de gris','Color'],
                     'Convertir a semitonos',['Nueve puntos','Cuatro puntos','Un punto de distintos tamaños'],
+                    'Dithering',['Ordenado','Disperso','Azaroso'],
                     'Brillo',
                     'Deshacer']]]
 
@@ -102,12 +103,10 @@ menu_def = [['Archivo', ['Abrir', 'Guardar', 'Cerrar']],
 layout = [
     [sg.Menu(menu_def)],
     [sg.Image(key='ORI-IMG',size = (700,400))],
-    #[sg.Text('Tamaño: 2348x1093',size = (800,1),justification = 'center')],
-    #[sg.Button('Ver imagen',size = (None,1))]
 ]
 
 # Genera la ventana
-window = sg.Window('TRENT v2.4',layout,size = (800,500),element_justification = "center",auto_size_text = False)
+window = sg.Window('TRENT v2.5',layout,size = (800,500),element_justification = "center",auto_size_text = False)
 
 if platform == "win32":
     window.set_icon("./icon/logo1.ico")
@@ -633,6 +632,22 @@ while True:
             else:
                 pdi.erosion(False)
 
+            window["ORI-IMG"].update(data = pdi.get_img('m'))
+
+    elif event in ['Ordenado','Disperso']:
+
+        if pdi != None:
+            if event == 'Ordenado':
+                pdi.dit_ord_disp(True)
+            else:
+                pdi.dit_ord_disp(False)
+
+            window["ORI-IMG"].update(data = pdi.get_img('m'))
+
+    elif event == 'Azaroso':
+
+        if pdi != None:
+            pdi.dit_azar()
             window["ORI-IMG"].update(data = pdi.get_img('m'))        
 
     elif event == 'Deshacer':
