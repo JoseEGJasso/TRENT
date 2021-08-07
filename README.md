@@ -16,6 +16,11 @@ TRENT es un software de manipulación de imágenes como proyecto para la materia
                                                 $ ./.../dist/linux/TRENT    
     ```
 ## Novedades
+* ### v.2.5
+    - Se crean 3 tipos de filtro de dithering:
+        - Ordenado
+        - Disperso
+        - Azaroso
 * ### v.2.4
     - Se crea el filtro de semitonos con 3 tipos de imagenes distintas:
         - Imagenes de nueve puntos
